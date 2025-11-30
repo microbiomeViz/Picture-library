@@ -1,3 +1,18 @@
+/* 🟢 强制让网页占满整个屏幕 */
+html, body, #root {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* 防止出现滚动条 */
+}
+
+/* 确保 Canvas 容器也能占满 */
+.tldraw-container {
+  width: 100%;
+  height: 100%;
+}
+
 /* 全局字体优化 */
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;

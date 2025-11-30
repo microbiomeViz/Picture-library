@@ -400,6 +400,40 @@ function CustomSidebar({ currentUser, onLogout }: { currentUser: any, onLogout: 
 // -----------------------------------------------------------------------------
 // 4. 主程序 (集成右侧面板开关)
 // -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// 🟢 把这段代码粘贴在 function App() 的上面
+// -----------------------------------------------------------------------------
+function TopNavigationBar() {
+    return (
+        <div style={{
+            height: '50px',              // 导航栏高度
+            background: '#ffffff',       // 背景色
+            borderBottom: '1px solid #e0e0e0',
+            display: 'flex',             // 弹性布局
+            alignItems: 'center',        // 垂直居中
+            justifyContent: 'flex-end',  // 靠右对齐
+            padding: '0 20px',           // 左右留白
+            zIndex: 1000,                // 确保在最上层
+            boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+        }}>
+            {/* 标题 */}
+            <span style={{ marginRight: '15px', color: '#666', fontWeight: 'bold', fontSize: '14px' }}>
+                Lab Chen 在线协作平台
+            </span>
+
+            {/* Logo 图片 */}
+            <img 
+                src="https://hhofyvimltossvlgfriv.supabase.co/storage/v1/object/public/bio-icons/1111.png"
+                alt="Logo"
+                style={{ height: '36px', borderRadius: '4px' }} 
+            />
+        </div>
+    )
+}
+
+// -----------------------------------------------------------------------------
+// 下面应该是原来的 function App() ...
+// -----------------------------------------------------------------------------
 function App() {
     const [session, setSession] = useState<any>(null)
     
@@ -414,29 +448,50 @@ function App() {
 
     if (!session) return <LoginScreen onLoginSuccess={() => {}} /> 
 
-	return (
-		<div 
-            style={{ position: 'fixed', inset: 0 }}
-            // 🟢 关键：根据状态添加 className，CSS 会根据这个类名决定是否隐藏面板
-            className={isStyleOpen ? '' : 'hide-right-panel'}
-        >
-            {/* 🟢 右侧面板的开关按钮 */}
-            <button 
-                className={`style-panel-toggle ${isStyleOpen ? 'active' : ''}`}
-                onClick={() => setIsStyleOpen(!isStyleOpen)}
-                title={isStyleOpen ? "收起颜色面板" : "展开颜色面板"}
-            >
-                {isStyleOpen ? '🎨' : '◀'}
-            </button>
+	// 替换 App 组件最后的 return 部分
+    return (
+        <div style={{ 
+            position: 'fixed', 
+            inset: 0, 
+            display: 'flex', 
+            flexDirection: 'column',
+            backgroundColor: '#f8f9fa' // 加个背景色，如果还是白屏能看出来是不是容器问题
+        }}>
+            {/* 1. 顶部导航栏 */}
+            <TopNavigationBar />
 
-			{session?.user?.id ? (
-                <Tldraw>
-                    <CanvasDropZone />
-                    <CustomSidebar currentUser={session.user} onLogout={() => supabase.auth.signOut()} />
-                </Tldraw>
-            ) : null}
-		</div>
-	)
+            {/* 2. 下方画布区域 - 关键修改！ */}
+            <div style={{ 
+                position: 'relative', 
+                flex: 1,           // 占满剩余高度
+                width: '100%',     // 占满宽度
+                height: '100%',    // 强制高度
+                overflow: 'hidden' // 防止溢出
+            }}>
+                
+                {/* 右侧面板开关 */}
+                <button 
+                    className={`style-panel-toggle ${isStyleOpen ? 'active' : ''}`}
+                    onClick={() => setIsStyleOpen(!isStyleOpen)}
+                    style={{ top: '10px', zIndex: 2000 }} // 提高层级
+                >
+                    {isStyleOpen ? '🎨' : '◀'}
+                </button>
+
+                {/* 🟢 重点：这里直接渲染 Tldraw 
+                   去掉了 persistenceKey 避免缓存报错
+                */}
+                {session?.user?.id && (
+                    <div style={{ position: 'absolute', inset: 0 }}>
+                        <Tldraw>
+                            <CanvasDropZone />
+                            <CustomSidebar currentUser={session.user} onLogout={() => supabase.auth.signOut()} />
+                        </Tldraw>
+                    </div>
+                )}
+            </div>
+        </div>
+    )
 }
 
 export default App
