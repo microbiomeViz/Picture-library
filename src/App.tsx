@@ -430,7 +430,7 @@ function App() {
             </button>
 
 			{session?.user?.id ? (
-                <Tldraw persistenceKey={`canvas-${session.user.id}`}>
+                <Tldraw>
                     <CanvasDropZone />
                     <CustomSidebar currentUser={session.user} onLogout={() => supabase.auth.signOut()} />
                 </Tldraw>
