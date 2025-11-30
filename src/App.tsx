@@ -5,7 +5,7 @@ import 'tldraw/tldraw.css'
 import './App.css' 
 
 // =============================================================================
-// ⚠️ 记得重新填入你的 Key ！
+// 1. 配置与初始化
 // =============================================================================
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY
@@ -13,9 +13,38 @@ const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 
-// -----------------------------------------------------------------------------
-// 1. 登录组件
-// -----------------------------------------------------------------------------
+// =============================================================================
+// 2. 顶部导航栏 (独立组件)
+// =============================================================================
+function TopNavigationBar() {
+    return (
+        <div style={{
+            height: '50px',
+            background: '#ffffff',
+            borderBottom: '1px solid #e0e0e0',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end', 
+            padding: '0 20px',
+            zIndex: 1000, 
+            boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+            flexShrink: 0 
+        }}>
+            <span style={{ marginRight: '15px', color: '#666', fontWeight: 'bold', fontSize: '14px' }}>
+                Lab Chen 在线协作平台
+            </span>
+            <img 
+                src="https://hhofyvimltossvlgfriv.supabase.co/storage/v1/object/public/bio-icons/1111.png"
+                alt="Logo"
+                style={{ height: '36px', borderRadius: '4px' }} 
+            />
+        </div>
+    )
+}
+
+// =============================================================================
+// 3. 登录界面
+// =============================================================================
 function LoginScreen({ onLoginSuccess }: { onLoginSuccess: () => void }) {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
@@ -34,7 +63,6 @@ function LoginScreen({ onLoginSuccess }: { onLoginSuccess: () => void }) {
         <div style={{ position: 'fixed', inset: 0, background: '#f5f5f7', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999 }}>
             <div style={{ background: 'white', padding: '40px', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', width: '320px', textAlign: 'center' }}>
                 <h2 style={{marginTop: 0, color: '#333'}}>Lab Chen 资源库</h2>
-                <p style={{color: '#666', fontSize: '14px', marginBottom: '20px'}}>请登录以切换至您的工作区</p>
                 <form onSubmit={handleLogin} style={{display: 'flex', flexDirection: 'column', gap: '15px'}}>
                     <input type="email" placeholder="邮箱" required value={email} onChange={e => setEmail(e.target.value)} style={{padding: '10px', border:'1px solid #ddd', borderRadius:'6px'}}/>
                     <input type="password" placeholder="密码" required value={password} onChange={e => setPassword(e.target.value)} style={{padding: '10px', border:'1px solid #ddd', borderRadius:'6px'}}/>
@@ -46,9 +74,9 @@ function LoginScreen({ onLoginSuccess }: { onLoginSuccess: () => void }) {
     )
 }
 
-// -----------------------------------------------------------------------------
-// 2. 拖拽逻辑
-// -----------------------------------------------------------------------------
+// =============================================================================
+// 4. 画布拖拽监听 (必须在 Tldraw 内部)
+// =============================================================================
 function CanvasDropZone() {
     const editor: any = useEditor();
     useEffect(() => {
@@ -76,33 +104,27 @@ function CanvasDropZone() {
     return null;
 }
 
-// -----------------------------------------------------------------------------
-// 3. 侧边栏
-// -----------------------------------------------------------------------------
+// =============================================================================
+// 5. 侧边栏 (必须在 Tldraw 内部)
+// =============================================================================
 function CustomSidebar({ currentUser, onLogout }: { currentUser: any, onLogout: () => void }) {
-	const editor: any = useEditor()
-    
+    const editor: any = useEditor()
     const [isOpen, setIsOpen] = useState(true) 
     const [activeTab, setActiveTab] = useState('资源库') 
     
-    // 资源库
+    // 资源数据
     const [categories, setCategories] = useState<any>({});
     const [currentCategory, setCurrentCategory] = useState('实验仪器')
     const [searchTerm, setSearchTerm] = useState('') 
-    
-    // 项目
     const [projects, setProjects] = useState<any[]>([])
     
-    // AI
+    // AI 与 上传
     const [prompt, setPrompt] = useState('')
     const [aiStyle, setAiStyle] = useState('Flat') 
     const [isAiLoading, setIsAiLoading] = useState(false)
-
-    // 上传
     const [isUploading, setIsUploading] = useState(false)
     const [targetCategory, setTargetCategory] = useState('实验仪器')
 
-    // === 数据加载 ===
     const fetchAssets = async () => {
         const { data } = await supabase.from('assets').select('*');
         if (data) {
@@ -118,6 +140,10 @@ function CustomSidebar({ currentUser, onLogout }: { currentUser: any, onLogout: 
                 });
                 return merged;
             });
+            if (!newCats[currentCategory] && Object.keys(newCats).length > 0) {
+                 setCurrentCategory(Object.keys(newCats)[0]);
+                 setTargetCategory(Object.keys(newCats)[0]);
+            }
         }
     }
 
@@ -129,61 +155,7 @@ function CustomSidebar({ currentUser, onLogout }: { currentUser: any, onLogout: 
     useEffect(() => {
         if (activeTab === '资源库') fetchAssets();
         if (activeTab === '项目') fetchProjects();
-        const sub1 = supabase.channel('assets_chan').on('postgres_changes', { event: '*', schema: 'public', table: 'assets' }, fetchAssets).subscribe();
-        return () => { supabase.removeChannel(sub1); }
     }, [activeTab]);
-
-
-    // === 操作逻辑 ===
-    const handleDeleteAsset = async (assetId: number, assetUrl: string) => {
-        if (!confirm('确定删除此素材吗？')) return;
-        const path = assetUrl.split('/').pop();
-        if (path) await supabase.storage.from('bio-icons').remove([path]);
-        const { error } = await supabase.from('assets').delete().eq('id', assetId);
-        if (error) alert("删除失败：只能删除自己上传的图片");
-        else fetchAssets();
-    }
-
-    const handleRenameAsset = async (assetId: number, oldName: string) => {
-        const newName = window.prompt("重命名素材:", oldName);
-        if (!newName || newName === oldName) return;
-        const { error } = await supabase.from('assets').update({ name: newName }).eq('id', assetId);
-        if (error) alert("重命名失败: 只能修改自己上传的素材");
-        else fetchAssets();
-    }
-
-    const handleRenameCategory = async (oldCategory: string) => {
-        const newCategory = window.prompt(`将分组 "${oldCategory}" 重命名为:`, oldCategory);
-        if (!newCategory || newCategory === oldCategory) return;
-        if(!confirm(`⚠️ 注意：\n你只能重命名【你自己上传】的图片。\n确定要把你自己上传的 "${oldCategory}" 里的图片移动到 "${newCategory}" 吗？`)) return;
-
-        const { data, error } = await supabase
-            .from('assets')
-            .update({ category: newCategory })
-            .eq('category', oldCategory)
-            .eq('user_id', currentUser.id)
-            .select();
-
-        if (error) {
-            alert("❌ 数据库错误: " + error.message);
-        } else if (!data || data.length === 0) {
-            alert(`⚠️ 未能重命名：\n分组 "${oldCategory}" 下没有找到属于你上传的素材。`);
-        } else {
-            alert(`✅ 成功！已将你上传的 ${data.length} 个素材移至 "${newCategory}"`);
-            await fetchAssets();
-            setCurrentCategory(newCategory);
-        }
-    }
-
-    const handleCreateCategory = () => {
-        const name = window.prompt("请输入新分组名称：");
-        if (!name) return;
-        if (categories[name]) return alert("该分组已存在！");
-        setCategories((prev: any) => ({ ...prev, [name]: [] }));
-        setCurrentCategory(name);
-        setTargetCategory(name);
-        alert(`✅ 分组 "${name}" 已创建。请尽快上传图片以保存此分组。`);
-    }
 
     const handleUpload = async (file: File) => {
         setIsUploading(true);
@@ -199,12 +171,37 @@ function CustomSidebar({ currentUser, onLogout }: { currentUser: any, onLogout: 
                 category: targetCategory,
                 user_id: currentUser.id 
             });
-            alert('上传成功');
+            alert('上传成功'); 
+            fetchAssets();
         } catch (e: any) { alert(e.message); } 
         finally { setIsUploading(false); }
     }
+    
+    const handleAIGenerate = async () => {
+       if (!prompt || !GEMINI_API_KEY) return alert("请输入描述或配置Key");
+       setIsAiLoading(true);
+       try {
+           let stylePrompt = "";
+           if (aiStyle === 'Flat') stylePrompt = "in flat vector art style, simple colors";
+           if (aiStyle === '3D') stylePrompt = "in 3d render style, glossy, high quality";
+           if (aiStyle === 'Sketch') stylePrompt = "in hand-drawn sketch style, black and white lines";
+           
+           const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`;
+           const systemPrompt = `You are a scientific illustrator. Create an SVG code for: "${prompt}" ${stylePrompt}. Return ONLY raw <svg> code. No markdown.`;
+           const response = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] }) });
+           const data = await response.json();
+           let svgCode = data.candidates[0].content.parts[0].text.replace(/```xml|```svg|```/g, '').trim();
+           const blob = new Blob([svgCode], { type: 'image/svg+xml' });
+           
+           const { w, h } = editor.getViewportScreenBounds()
+           const center = editor.screenToPage({ x: w/2, y: h/2 })
+           const file = new File([blob], "ai.svg", { type: 'image/svg+xml' });
+           editor.putExternalContent({ type: 'files', files: [file], point: center });
+           setPrompt(''); 
+       } catch (error: any) { alert("生成失败: " + error.message); } finally { setIsAiLoading(false); }
+   }
 
-    const handleSaveProject = async () => {
+   const handleSaveProject = async () => {
         const name = window.prompt('请输入项目名称', '未命名实验图');
         if (!name) return;
         const snapshot = editor.store.getSnapshot();
@@ -219,176 +216,75 @@ function CustomSidebar({ currentUser, onLogout }: { currentUser: any, onLogout: 
         }
     }
 
-    const handleDeleteProject = async (id: number) => {
-        if (!confirm('确定删除此项目？')) return;
-        const { error } = await supabase.from('projects').delete().eq('id', id);
-        if (error) alert('删除失败'); else fetchProjects();
-    }
-
-    const handleAIGenerate = async () => {
-        if (!prompt || !GEMINI_API_KEY) return alert("请输入描述或配置Key");
-        setIsAiLoading(true);
-        try {
-            let stylePrompt = "";
-            if (aiStyle === 'Flat') stylePrompt = "in flat vector art style, simple colors";
-            if (aiStyle === '3D') stylePrompt = "in 3d render style, glossy, high quality";
-            if (aiStyle === 'Sketch') stylePrompt = "in hand-drawn sketch style, black and white lines";
-            
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`;
-            const systemPrompt = `You are a scientific illustrator. Create an SVG code for: "${prompt}" ${stylePrompt}. Return ONLY raw <svg> code. No markdown.`;
-            const response = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] }) });
-            const data = await response.json();
-            let svgCode = data.candidates[0].content.parts[0].text.replace(/```xml|```svg|```/g, '').trim();
-            const blob = new Blob([svgCode], { type: 'image/svg+xml' });
-            
-            const { w, h } = editor.getViewportScreenBounds()
-            const center = editor.screenToPage({ x: w/2, y: h/2 })
-            const file = new File([blob], "ai.svg", { type: 'image/svg+xml' });
-            editor.putExternalContent({ type: 'files', files: [file], point: center });
-            setPrompt(''); 
-        } catch (error: any) { alert("生成失败: " + error.message); } finally { setIsAiLoading(false); }
-    }
-
-    useEffect(() => { setTargetCategory(currentCategory); }, [currentCategory]);
-
     return (
         <>
-            {!isOpen && (
-                <div className="sidebar-toggle" onClick={() => setIsOpen(true)} style={{left: 10}}>➡️</div>
-            )}
-
-            <div className={`sidebar-container ${!isOpen ? 'collapsed' : ''}`}>
+            {!isOpen && <div className="sidebar-toggle" onClick={() => setIsOpen(true)} style={{left: 10, zIndex: 3000}}>➡️</div>}
+            
+            <div className={`sidebar-container ${!isOpen ? 'collapsed' : ''}`} style={{zIndex: 3000}}>
                 <div className="sidebar-content">
-                    <div className="header-row" style={{alignItems:'center', gap: 10}}> {/* 修改了对齐方式 */}
-        
-        {/* 🟢 1. 这里是 Logo 区域 */}
-        <img 
-            src="https://hhofyvimltossvlgfriv.supabase.co/storage/v1/object/public/bio-icons/1111.png" 
-            alt="Logo" 
-            style={{
-                width: '40px', 
-                height: '40px', 
-                objectFit: 'contain', 
-                borderRadius: '4px' // 如果想要圆角可以保留这个
-            }} 
-        />
-
-        {/* 🟢 2. 这里是标题和邮箱 */}
-        <div style={{flex: 1}}> {/* 让它占据剩余空间 */}
-            <h3 style={{margin:0, fontSize:'16px', lineHeight: '1.2'}}>Lab Chen</h3>
-            <div style={{fontSize:'10px', color:'#999', maxWidth:110, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
-                {currentUser.email}
-            </div>
-        </div>
-
-        {/* 🟢 3. 这里是按钮组 */}
-        <div style={{display:'flex', gap:5}}>
-            <button onClick={onLogout} style={{fontSize:'10px', padding:'4px', background:'#ffebee', color:'#c62828', border:'none', borderRadius:4, cursor:'pointer'}} title="切换账号">
-                🔁
-            </button>
-            <button onClick={() => setIsOpen(false)} style={{fontSize:'10px', padding:'4px', cursor:'pointer', border:'1px solid #ddd', background:'white', borderRadius:4}}>⬅️</button>
-        </div>
-    </div>
+                    <div className="header-row" style={{alignItems:'center', gap: 10}}>
+                        <div style={{flex: 1}}><h3 style={{margin:0}}>工具箱</h3></div>
+                        <button onClick={onLogout} style={{fontSize: 10, padding: '2px 5px'}}>退出</button>
+                        <button onClick={() => setIsOpen(false)} style={{cursor:'pointer'}}>⬅️</button>
+                    </div>
                     
-                    
-
-                    <div style={{display:'flex', gap:10, borderBottom:'1px solid #eee', paddingBottom:5}}>
-                        <span onClick={() => setActiveTab('资源库')} style={{fontSize:13, fontWeight:'bold', color: activeTab==='资源库'?'#2684ff':'#999', cursor:'pointer'}}>📂 素材库</span>
-                        <span onClick={() => setActiveTab('项目')} style={{fontSize:13, fontWeight:'bold', color: activeTab==='项目'?'#2684ff':'#999', cursor:'pointer'}}>💾 我的项目</span>
+                    <div style={{display:'flex', gap:10, borderBottom:'1px solid #eee', paddingBottom:5, marginTop: 10}}>
+                        <span onClick={() => setActiveTab('资源库')} style={{fontWeight:'bold', color: activeTab==='资源库'?'#2684ff':'#999', cursor:'pointer'}}>📂 素材库</span>
+                        <span onClick={() => setActiveTab('项目')} style={{fontWeight:'bold', color: activeTab==='项目'?'#2684ff':'#999', cursor:'pointer'}}>💾 项目</span>
                     </div>
 
                     {activeTab === '资源库' && (
                         <>
-                            <div style={{background:'#f0f7ff', padding:10, borderRadius:8}}>
-                                <div style={{fontSize:11, fontWeight:'bold', color:'#2684ff', marginBottom:5}}>🤖 AI 绘图助手</div>
-                                <input value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="描述素材..." className="search-input" />
-                                <div className="style-chips">
-                                    {['Flat', '3D', 'Sketch'].map(s => (
-                                        <div key={s} onClick={() => setAiStyle(s)} className={`style-chip ${aiStyle===s?'active':''}`}>{s}</div>
-                                    ))}
+                             <div style={{background:'#f0f7ff', padding:10, borderRadius:8, marginTop: 10}}>
+                                <input value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="AI 生成图片..." className="search-input" />
+                                <div style={{display:'flex', gap:5, marginTop:5}}>
+                                     {['Flat', '3D', 'Sketch'].map(s => (
+                                         <span key={s} onClick={() => setAiStyle(s)} style={{fontSize:10, padding:'2px 5px', background: aiStyle===s?'#2684ff':'#ddd', color: aiStyle===s?'white':'#333', borderRadius:4, cursor:'pointer'}}>{s}</span>
+                                     ))}
                                 </div>
-                                <button onClick={handleAIGenerate} disabled={isAiLoading} style={{width:'100%', marginTop:5, background:'#2684ff', color:'white', border:'none', padding:6, borderRadius:4, cursor:'pointer'}}>
-                                    {isAiLoading ? '生成中...' : '生成'}
-                                </button>
+                                <button onClick={handleAIGenerate} disabled={isAiLoading} style={{marginTop:5, width:'100%'}}>{isAiLoading?'生成中...':'✨ AI绘图'}</button>
                             </div>
 
-                            <input placeholder="🔍 搜索素材 (如: 烧杯)" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="search-input" />
-
-                            <div style={{display:'flex', gap:5, overflowX:'auto', paddingBottom:5, alignItems:'center'}}>
-                                {Object.keys(categories).map(cat => (
-                                    <button 
-                                        key={cat} 
-                                        onClick={() => setCurrentCategory(cat)} 
-                                        onDoubleClick={() => handleRenameCategory(cat)}
-                                        title="双击可重命名"
-                                        style={{fontSize:10, padding:'4px 8px', border:'1px solid #ddd', borderRadius:10, background: currentCategory===cat?'#333':'#fff', color:currentCategory===cat?'#fff':'#333', cursor:'pointer', whiteSpace:'nowrap', flexShrink:0}}
-                                    >
-                                        {cat}
-                                    </button>
-                                ))}
-                                <button onClick={handleCreateCategory} style={{fontSize:14, fontWeight:'bold', padding:'2px 8px', border:'1px dashed #999', borderRadius:10, background:'white', color:'#666', cursor:'pointer', flexShrink:0}} title="新建分组">+</button>
-                            </div>
+                            <input placeholder="🔍 搜索..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="search-input" style={{marginTop: 10}} />
                             
-                            <div style={{background:'#f9f9f9', padding:8, borderRadius:6, border:'1px solid #eee'}}>
-                                <div style={{fontSize:11, marginBottom:5, color:'#666'}}>
-                                    上传图片到: <b>{targetCategory}</b>
-                                    <select 
-                                        value={targetCategory} 
-                                        onChange={e => setTargetCategory(e.target.value)} 
-                                        style={{marginLeft:5, fontSize:10, maxWidth:100}}
-                                    >
-                                        {Object.keys(categories).map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                                    </select>
-                                </div>
-                                <label style={{display:'block', textAlign:'center', padding:8, border:'1px dashed #ccc', borderRadius:6, cursor:'pointer', fontSize:12, color:'#2684ff', background:'white'}}>
-                                    {isUploading ? '上传中...' : '☁️ 选择文件上传'}
-                                    <input type="file" style={{display:'none'}} accept=".svg,.png,.jpg" onChange={e => e.target.files && handleUpload(e.target.files[0])} />
-                                </label>
+                            <div style={{display:'flex', gap:5, overflowX:'auto', marginTop: 10, paddingBottom:5}}>
+                                {Object.keys(categories).map(cat => (
+                                    <span key={cat} onClick={() => { setCurrentCategory(cat); setTargetCategory(cat); }} 
+                                          style={{fontSize:11, padding:'3px 8px', borderRadius:10, background: currentCategory===cat?'#333':'#eee', color: currentCategory===cat?'white':'#333', cursor:'pointer', whiteSpace:'nowrap'}}>
+                                        {cat}
+                                    </span>
+                                ))}
                             </div>
 
-                            <div className="assets-grid">
+                            <div className="assets-grid" style={{marginTop: 10, maxHeight: '300px', overflowY: 'auto'}}>
                                 {categories[currentCategory]
                                     ?.filter((asset: any) => asset.name.includes(searchTerm))
                                     .map((asset: any) => (
-                                        <div key={asset.id} className="asset-card" draggable onDragStart={e => e.dataTransfer.setData('bio-render-url', asset.url)}
-                                            onClick={async () => {
-                                                const { w, h } = editor.getViewportScreenBounds()
-                                                const center = editor.screenToPage({ x: w/2, y: h/2 })
-                                                const res = await fetch(asset.url);
-                                                const blob = await res.blob();
-                                                const file = new File([blob], "asset.svg", { type: blob.type });
-                                                editor.putExternalContent({ type: 'files', files: [file], point: center });
-                                            }}
-                                        >
-                                            <img src={asset.url} alt={asset.name} />
-                                            <div className="asset-name" onDoubleClick={(e) => { e.stopPropagation(); handleRenameAsset(asset.id, asset.name); }}>
-                                                {asset.name}
-                                            </div>
-                                            {asset.user_id === currentUser.id && (
-                                                <div className="delete-btn" onClick={(e) => { e.stopPropagation(); handleDeleteAsset(asset.id, asset.url); }}>×</div>
-                                            )}
-                                        </div>
-                                ))}
-                                {categories[currentCategory]?.length === 0 && (
-                                    <div style={{gridColumn:'1 / -1', textAlign:'center', fontSize:11, color:'#999', padding:20}}>
-                                        此分组为空，请点击上方按钮上传图片<br/>(空分组刷新后会消失)
+                                    <div key={asset.id} className="asset-card" draggable onDragStart={e => e.dataTransfer.setData('bio-render-url', asset.url)}>
+                                        <img src={asset.url} alt={asset.name} style={{width:'100%', height:'50px', objectFit:'contain'}} />
+                                        <div className="asset-name" style={{fontSize:10, textAlign:'center', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{asset.name}</div>
                                     </div>
-                                )}
+                                ))}
+                                {(!categories[currentCategory] || categories[currentCategory].length === 0) && <div style={{fontSize:12, color:'#999', textAlign:'center', marginTop:20}}>暂无素材</div>}
                             </div>
+
+                            <label style={{display:'block', textAlign:'center', marginTop:20, cursor:'pointer', color:'blue', fontSize:12}}>
+                                {isUploading ? '上传中...' : '☁️ 上传到当前分类'}
+                                <input type="file" style={{display:'none'}} onChange={e => e.target.files && handleUpload(e.target.files[0])} />
+                            </label>
                         </>
                     )}
 
                     {activeTab === '项目' && (
-                        <div style={{display:'flex', flexDirection:'column', gap:10}}>
-                            <button onClick={handleSaveProject} style={{background:'#28a745', color:'white', border:'none', padding:10, borderRadius:6, cursor:'pointer'}}>💾 保存当前画布到云端</button>
-                            <div style={{fontSize:12, color:'#666', marginTop:10}}>我的云端存档:</div>
-                            {projects.map(p => (
-                                <div key={p.id} className="project-item">
-                                    <span onClick={() => handleLoadProject(p.data)}>{p.name}</span>
-                                    <span onClick={() => handleDeleteProject(p.id)} style={{color:'red', fontWeight:'bold'}}>×</span>
-                                </div>
-                            ))}
-                            {projects.length === 0 && <div style={{fontSize:12, color:'#999', textAlign:'center'}}>暂无存档</div>}
+                        <div style={{marginTop: 20}}>
+                            <button onClick={handleSaveProject} style={{width:'100%', padding:8, background:'#28a745', color:'white', border:'none', borderRadius:4}}>💾 保存当前画布</button>
+                            <div style={{marginTop:10}}>
+                                {projects.map(p => (
+                                    <div key={p.id} onClick={() => handleLoadProject(p.data)} style={{padding:8, borderBottom:'1px solid #eee', cursor:'pointer', fontSize:13}}>
+                                        {p.name} <span style={{fontSize:10, color:'#999'}}>{new Date(p.created_at).toLocaleDateString()}</span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
                 </div>
@@ -397,47 +293,11 @@ function CustomSidebar({ currentUser, onLogout }: { currentUser: any, onLogout: 
     )
 }
 
-// -----------------------------------------------------------------------------
-// 4. 主程序 (集成右侧面板开关)
-// -----------------------------------------------------------------------------
-// -----------------------------------------------------------------------------
-// 🟢 把这段代码粘贴在 function App() 的上面
-// -----------------------------------------------------------------------------
-function TopNavigationBar() {
-    return (
-        <div style={{
-            height: '50px',              // 导航栏高度
-            background: '#ffffff',       // 背景色
-            borderBottom: '1px solid #e0e0e0',
-            display: 'flex',             // 弹性布局
-            alignItems: 'center',        // 垂直居中
-            justifyContent: 'flex-end',  // 靠右对齐
-            padding: '0 20px',           // 左右留白
-            zIndex: 1000,                // 确保在最上层
-            boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-        }}>
-            {/* 标题 */}
-            <span style={{ marginRight: '15px', color: '#666', fontWeight: 'bold', fontSize: '14px' }}>
-                Lab Chen 在线协作平台
-            </span>
-
-            {/* Logo 图片 */}
-            <img 
-                src="https://hhofyvimltossvlgfriv.supabase.co/storage/v1/object/public/bio-icons/1111.png"
-                alt="Logo"
-                style={{ height: '36px', borderRadius: '4px' }} 
-            />
-        </div>
-    )
-}
-
-// -----------------------------------------------------------------------------
-// 下面应该是原来的 function App() ...
-// -----------------------------------------------------------------------------
+// =============================================================================
+// 6. 主程序
+// =============================================================================
 function App() {
     const [session, setSession] = useState<any>(null)
-    
-    // 🟢 新增状态：控制右侧颜色面板是否展开
     const [isStyleOpen, setIsStyleOpen] = useState(true) 
 
     useEffect(() => {
@@ -448,39 +308,27 @@ function App() {
 
     if (!session) return <LoginScreen onLoginSuccess={() => {}} /> 
 
-	// 替换 App 组件最后的 return 部分
     return (
         <div style={{ 
-            position: 'fixed', 
-            inset: 0, 
-            display: 'flex', 
-            flexDirection: 'column',
-            backgroundColor: '#f8f9fa' // 加个背景色，如果还是白屏能看出来是不是容器问题
+            position: 'fixed', inset: 0, display: 'flex', flexDirection: 'column', 
+            background: '#f8f9fa' 
         }}>
             {/* 1. 顶部导航栏 */}
             <TopNavigationBar />
 
-            {/* 2. 下方画布区域 - 关键修改！ */}
-            <div style={{ 
-                position: 'relative', 
-                flex: 1,           // 占满剩余高度
-                width: '100%',     // 占满宽度
-                height: '100%',    // 强制高度
-                overflow: 'hidden' // 防止溢出
-            }}>
+            {/* 2. 画布区域 */}
+            <div style={{ position: 'relative', flex: 1, width: '100%', height: '100%', overflow: 'hidden' }}>
                 
-                {/* 右侧面板开关 */}
+                {/* 侧边栏开关 */}
                 <button 
                     className={`style-panel-toggle ${isStyleOpen ? 'active' : ''}`}
                     onClick={() => setIsStyleOpen(!isStyleOpen)}
-                    style={{ top: '10px', zIndex: 2000 }} // 提高层级
+                    style={{ top: '10px', zIndex: 2000 }}
                 >
                     {isStyleOpen ? '🎨' : '◀'}
                 </button>
 
-                {/* 🟢 重点：这里直接渲染 Tldraw 
-                   去掉了 persistenceKey 避免缓存报错
-                */}
+                {/* ⚠️ 核心修正：CustomSidebar 必须放在 Tldraw 内部 */}
                 {session?.user?.id && (
                     <div style={{ position: 'absolute', inset: 0 }}>
                         <Tldraw>
