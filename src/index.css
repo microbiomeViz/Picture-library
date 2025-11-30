@@ -5,3 +5,45 @@ body {
 	font-family: 'Inter', sans-serif;
 	overscroll-behavior: none;
 }
+/* 自定义素材库面板样式 */
+.custom-sidebar {
+  position: absolute;
+  top: 60px;          /* 距离顶部留点空隙，避开菜单栏 */
+  left: 10px;         /* 距离左边 10px */
+  width: 200px;       /* 宽度 */
+  height: 80vh;       /* 高度占屏幕 80% */
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  z-index: 2000;      /* 关键！层级要高，才能浮在画布上面 */
+  padding: 15px;
+  overflow-y: auto;   /* 如果素材太多，允许滚动 */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.custom-sidebar h3 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.asset-item {
+  cursor: pointer;
+  border: 1px solid #eee;
+  padding: 5px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.asset-item:hover {
+  background-color: #f0f0f0;
+  border-color: #ccc;
+}
+
+.asset-item img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
