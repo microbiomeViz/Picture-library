@@ -11907,19 +11907,39 @@ const insertImageToCanvas = (editor, url, clientX, clientY) => {
   if (url.startsWith("data:")) {
     safeUrl = base64ToBlobUrl(url);
   }
-  const point = editor.screenToPage({ x: clientX, y: clientY });
-  editor.createShape({
-    type: "image",
-    x: point.x - 50,
-    y: point.y - 50,
-    props: {
-      w: 100,
-      h: 100,
-      url: safeUrl,
-      // 这里放入的是清洗过的 URL
-      assetId: null
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.src = safeUrl;
+  img.onload = () => {
+    const width = img.naturalWidth || 200;
+    const height = img.naturalHeight || 200;
+    const MAX_SIZE = 600;
+    let finalW = width;
+    let finalH = height;
+    if (width > height && width > MAX_SIZE) {
+      finalW = MAX_SIZE;
+      finalH = height / width * MAX_SIZE;
+    } else if (height > width && height > MAX_SIZE) {
+      finalH = MAX_SIZE;
+      finalW = width / height * MAX_SIZE;
     }
-  });
+    const point = editor.screenToPage({ x: clientX, y: clientY });
+    editor.createShape({
+      type: "image",
+      x: point.x - finalW / 2,
+      y: point.y - finalH / 2,
+      props: {
+        w: finalW,
+        h: finalH,
+        url: safeUrl,
+        assetId: null
+      }
+    });
+  };
+  img.onerror = () => {
+    console.error("图片加载失败:", safeUrl);
+    alert("图片无法加载！请确认：\n1. Supabase 的 Bucket 是 Public 的吗？\n2. Settings->API->CORS 里填了你的网址吗？");
+  };
 };
 const DRAG_KEY = "picture-library-drag-data";
 function CanvasDropZone({ editor }) {
