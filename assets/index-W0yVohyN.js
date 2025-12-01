@@ -11877,7 +11877,7 @@ function TopNavigationBar() {
     left: 0,
     right: 0
   }, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { marginRight: "15px", color: "#666", fontWeight: "bold", fontSize: "14px" }, children: "Lab Chen 在线协作平台" }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { marginRight: "15px", color: "#666", fontWeight: "bold", fontSize: "14px" }, children: "Picture library" }),
     /* @__PURE__ */ jsxRuntimeExports.jsx(
       "img",
       {
@@ -11903,7 +11903,7 @@ function LoginScreen({ onLoginSuccess }) {
     else onLoginSuccess();
   };
   return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { position: "fixed", inset: 0, background: "#f5f5f7", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 9999 }, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { background: "white", padding: "40px", borderRadius: "12px", width: "320px", textAlign: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { style: { marginTop: 0, color: "#333" }, children: "Lab Chen 资源库" }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { style: { marginTop: 0, color: "#333" }, children: "Picture librsry" }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("form", { onSubmit: handleLogin, style: { display: "flex", flexDirection: "column", gap: "15px" }, children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("input", { type: "email", placeholder: "邮箱", required: true, value: email, onChange: (e) => setEmail(e.target.value), style: { padding: "10px", border: "1px solid #ddd", borderRadius: "6px" } }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("input", { type: "password", placeholder: "密码", required: true, value: password, onChange: (e) => setPassword(e.target.value), style: { padding: "10px", border: "1px solid #ddd", borderRadius: "6px" } }),
@@ -12107,7 +12107,7 @@ function CustomSidebar({ currentUser, onLogout, editorInstance }) {
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `sidebar-container ${!isOpen ? "collapsed" : ""}`, children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "sidebar-header", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" }, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { style: { margin: 0, fontSize: 16 }, children: "Lab Chen 资源库" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { style: { margin: 0, fontSize: 16 }, children: " Picture library" }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: () => setIsOpen(false), style: { border: "none", background: "none", cursor: "pointer" }, children: "⬅️" })
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "user-info-box", children: [
