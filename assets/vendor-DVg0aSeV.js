@@ -115420,6 +115420,5 @@ export {
   getAugmentedNamespace as g,
   jsxRuntimeExports as j,
   reactExports as r,
-  tslib_es6$1 as t,
-  useEditor as u
+  tslib_es6$1 as t
 };

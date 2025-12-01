@@ -1,4 +1,4 @@
-import { _ as __awaiter, g as getAugmentedNamespace, t as tslib_es6, a as getDefaultExportFromCjs, b as __rest, r as reactExports, j as jsxRuntimeExports, T as Tldraw, u as useEditor, R as ReactDOM, c as React } from "./vendor-DdwNmKtj.js";
+import { _ as __awaiter, g as getAugmentedNamespace, t as tslib_es6, a as getDefaultExportFromCjs, b as __rest, r as reactExports, j as jsxRuntimeExports, T as Tldraw, R as ReactDOM, c as React } from "./vendor-DVg0aSeV.js";
 function _mergeNamespaces(n, m) {
   for (var i = 0; i < m.length; i++) {
     const e = m[i];
@@ -11835,7 +11835,7 @@ if (shouldShowDeprecationWarning()) {
 const SUPABASE_URL = "https://hhofyvimltossvlgfriv.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhob2Z5dmltbHRvc3N2bGdmcml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1MjAyNjYsImV4cCI6MjA4MDA5NjI2Nn0.paPgGikExh3xekXczyVDhSTttQT5vhsYzg9oZjCQvFk";
 const GEMINI_API_KEY = "你的_Gemini_Key";
-const TLDRAW_LICENSE_KEY = "tldraw-2026-03-11/WyJlcHlNb2JOQiIsWyIqIl0sMTYsIjIwMjYtMDMtMTEiXQ.ASQfIycCDDPxWYntF0g6ykxx1pFsry8j3a6K4q8yRzaOZATPJZOyYboKbwp3luJnj0d7V3i24r8Wuguo04knMQ";
+const TLDRAW_KEY = void 0;
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 class ErrorBoundary extends reactExports.Component {
   constructor(props) {
@@ -11846,20 +11846,16 @@ class ErrorBoundary extends reactExports.Component {
     return { hasError: true, error };
   }
   componentDidCatch(error, errorInfo) {
-    console.error("网页崩溃详情:", error, errorInfo);
+    console.error("崩溃详情:", error, errorInfo);
   }
   render() {
     if (this.state.hasError) {
-      return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { padding: 20, color: "red", background: "#fff", height: "100vh", zIndex: 99999999, position: "relative" }, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { children: "💥 网页崩溃了！" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { children: [
-          "错误信息：",
-          this.state.error?.toString()
-        ] }),
+      return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { padding: 20, color: "red", background: "#fff", height: "100vh", zIndex: 99999999 }, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { children: "💥 网页出错了" }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: () => {
           localStorage.clear();
           window.location.reload();
-        }, style: { padding: "10px 20px", marginTop: 10, cursor: "pointer" }, children: "尝试清空缓存并刷新" })
+        }, children: "清空缓存并刷新" })
       ] });
     }
     return this.props.children;
@@ -11874,7 +11870,7 @@ function TopNavigationBar() {
     alignItems: "center",
     justifyContent: "flex-end",
     padding: "0 20px",
-    zIndex: 3e3,
+    zIndex: 5e3,
     boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
     position: "absolute",
     top: 0,
@@ -11896,63 +11892,25 @@ function LoginScreen({ onLoginSuccess }) {
   const [email, setEmail] = reactExports.useState("");
   const [password, setPassword] = reactExports.useState("");
   const [loading, setLoading] = reactExports.useState(false);
-  const [errorMsg, setErrorMsg] = reactExports.useState("");
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setErrorMsg("");
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
-    if (error) setErrorMsg("登录失败：账号或密码错误");
-    else onLoginSuccess();
+    if (!error) onLoginSuccess();
+    else alert("登录失败");
   };
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { position: "fixed", inset: 0, background: "#f5f5f7", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 9999 }, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { background: "white", padding: "40px", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0,0,0,0.1)", width: "320px", textAlign: "center" }, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { style: { marginTop: 0, color: "#333" }, children: "Lab Chen 资源库" }),
+  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { position: "fixed", inset: 0, background: "#f5f5f7", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 9999 }, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { background: "white", padding: "40px", borderRadius: "12px", width: "300px", textAlign: "center" }, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { children: "Lab Chen" }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("form", { onSubmit: handleLogin, style: { display: "flex", flexDirection: "column", gap: "15px" }, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("input", { type: "email", placeholder: "邮箱", required: true, value: email, onChange: (e) => setEmail(e.target.value), style: { padding: "10px", border: "1px solid #ddd", borderRadius: "6px" } }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("input", { type: "password", placeholder: "密码", required: true, value: password, onChange: (e) => setPassword(e.target.value), style: { padding: "10px", border: "1px solid #ddd", borderRadius: "6px" } }),
-      errorMsg && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { color: "red", fontSize: "12px" }, children: errorMsg }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "submit", disabled: loading, style: { padding: "10px", background: "#2684ff", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: "bold" }, children: loading ? "登录中..." : "进入实验室" })
+      /* @__PURE__ */ jsxRuntimeExports.jsx("input", { type: "email", placeholder: "邮箱", required: true, value: email, onChange: (e) => setEmail(e.target.value), style: { padding: "10px" } }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("input", { type: "password", placeholder: "密码", required: true, value: password, onChange: (e) => setPassword(e.target.value), style: { padding: "10px" } }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "submit", disabled: loading, style: { padding: "10px", background: "#2684ff", color: "white", border: "none" }, children: loading ? "..." : "登录" })
     ] })
   ] }) });
 }
-function CanvasDropZone() {
-  const editor = useEditor();
-  reactExports.useEffect(() => {
-    const handleDragOver = (e) => {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = "copy";
-    };
-    const handleDrop = async (e) => {
-      const bioUrl = e.dataTransfer?.getData("bio-render-url");
-      if (!bioUrl) return;
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      try {
-        const point = editor.screenToPage({ x: e.clientX, y: e.clientY });
-        try {
-          const response = await fetch(bioUrl);
-          const blob = await response.blob();
-          const file = new File([blob], "asset.svg", { type: blob.type });
-          editor.putExternalContent({ type: "files", files: [file], point, ignoreParent: false });
-        } catch (fetchErr) {
-          editor.createShape({ type: "image", x: point.x - 50, y: point.y - 50, props: { w: 100, h: 100, url: bioUrl } });
-        }
-      } catch (error) {
-        console.error("拖拽失败:", error);
-      }
-    };
-    window.addEventListener("dragover", handleDragOver, true);
-    window.addEventListener("drop", handleDrop, true);
-    return () => {
-      window.removeEventListener("dragover", handleDragOver, true);
-      window.removeEventListener("drop", handleDrop, true);
-    };
-  }, [editor]);
-  return null;
-}
-function CustomSidebar({ currentUser, onLogout }) {
-  const editor = useEditor();
+function CustomSidebar({ currentUser, onLogout, editorInstance }) {
+  const editor = editorInstance;
   const [isOpen, setIsOpen] = reactExports.useState(true);
   const [activeTab, setActiveTab] = reactExports.useState("资源库");
   const [categories, setCategories] = reactExports.useState({});
@@ -11967,10 +11925,7 @@ function CustomSidebar({ currentUser, onLogout }) {
   const fetchAssets = async () => {
     try {
       const { data, error } = await supabase.from("assets").select("*");
-      if (error) {
-        console.error("数据库读取错误:", error);
-        throw error;
-      }
+      if (error) throw error;
       if (data) {
         const newCats = {};
         if (data.length === 0) newCats["默认"] = [];
@@ -11989,7 +11944,7 @@ function CustomSidebar({ currentUser, onLogout }) {
         }
       }
     } catch (e) {
-      console.error("加载失败", e);
+      console.error(e);
     }
   };
   const fetchProjects = async () => {
@@ -12007,12 +11962,7 @@ function CustomSidebar({ currentUser, onLogout }) {
       const path = `${Date.now()}.${ext}`;
       await supabase.storage.from("bio-icons").upload(path, file);
       const { data: { publicUrl } } = supabase.storage.from("bio-icons").getPublicUrl(path);
-      await supabase.from("assets").insert({
-        name: file.name.split(".")[0],
-        url: publicUrl,
-        category: targetCategory,
-        user_id: currentUser.id
-      });
+      await supabase.from("assets").insert({ name: file.name.split(".")[0], url: publicUrl, category: targetCategory, user_id: currentUser.id });
       alert("上传成功");
       fetchAssets();
     } catch (e) {
@@ -12022,7 +11972,7 @@ function CustomSidebar({ currentUser, onLogout }) {
     }
   };
   const handleAIGenerate = async () => {
-    if (!prompt || !GEMINI_API_KEY) return alert("请输入描述或配置Key");
+    if (!prompt || !GEMINI_API_KEY) return alert("配置Key");
     setIsAiLoading(true);
     try {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`;
@@ -12037,27 +11987,27 @@ function CustomSidebar({ currentUser, onLogout }) {
       editor.putExternalContent({ type: "files", files: [file], point: center });
       setPrompt("");
     } catch (error) {
-      alert("生成失败: " + error.message);
+      alert("生成失败");
     } finally {
       setIsAiLoading(false);
     }
   };
   const handleSaveProject = async () => {
-    const name = window.prompt("请输入项目名称", "未命名实验图");
+    const name = window.prompt("项目名称", "未命名");
     if (!name) return;
     const snapshot = editor.store.getSnapshot();
     const { error } = await supabase.from("projects").insert({ name, data: snapshot, user_id: currentUser.id });
-    if (error) alert("保存失败: " + error.message);
+    if (error) alert("失败: " + error.message);
     else {
       alert("✅ 保存成功");
       fetchProjects();
     }
   };
-  const handleLoadProject = (projectData) => {
-    if (confirm("加载云端项目覆盖当前画布？")) editor.store.loadSnapshot(projectData);
+  const handleLoadProject = (d) => {
+    if (confirm("覆盖当前画布？")) editor.store.loadSnapshot(d);
   };
   const handleDeleteProject = async (id) => {
-    if (!confirm("确定删除？")) return;
+    if (!confirm("删除？")) return;
     await supabase.from("projects").delete().eq("id", id);
     fetchProjects();
   };
@@ -12067,8 +12017,8 @@ function CustomSidebar({ currentUser, onLogout }) {
     /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `sidebar-container ${!isOpen ? "collapsed" : ""}`, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "sidebar-content", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "header-row", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { flex: 1 }, children: /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { style: { margin: 0 }, children: "工具箱" }) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: onLogout, style: { fontSize: 10, padding: "2px 5px" }, children: "退出" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: () => setIsOpen(false), style: { cursor: "pointer" }, children: "⬅️" })
+        /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: onLogout, style: { fontSize: 10 }, children: "退出" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: () => setIsOpen(false), children: "⬅️" })
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", gap: 10, borderBottom: "1px solid #eee", paddingBottom: 5, marginTop: 10 }, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { onClick: () => setActiveTab("资源库"), style: { fontWeight: "bold", color: activeTab === "资源库" ? "#2684ff" : "#999", cursor: "pointer" }, children: "📂 素材库" }),
@@ -12078,38 +12028,27 @@ function CustomSidebar({ currentUser, onLogout }) {
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { background: "#f0f7ff", padding: 10, borderRadius: 8, marginTop: 10 }, children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("input", { value: prompt, onChange: (e) => setPrompt(e.target.value), placeholder: "AI 生成图片...", className: "search-input" }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { display: "flex", gap: 5, marginTop: 5 }, children: ["Flat", "3D", "Sketch"].map((s) => /* @__PURE__ */ jsxRuntimeExports.jsx("span", { onClick: () => setAiStyle(s), style: { fontSize: 10, padding: "2px 5px", background: aiStyle === s ? "#2684ff" : "#ddd", color: aiStyle === s ? "white" : "#333", borderRadius: 4, cursor: "pointer" }, children: s }, s)) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: handleAIGenerate, disabled: isAiLoading, style: { marginTop: 5, width: "100%" }, children: isAiLoading ? "生成中..." : "✨ AI绘图" })
+          /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: handleAIGenerate, disabled: isAiLoading, style: { marginTop: 5, width: "100%" }, children: isAiLoading ? "..." : "✨ AI绘图" })
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("input", { placeholder: "🔍 搜索...", value: searchTerm, onChange: (e) => setSearchTerm(e.target.value), className: "search-input", style: { marginTop: 10 } }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { display: "flex", gap: 5, overflowX: "auto", marginTop: 10, paddingBottom: 5 }, children: Object.keys(categories).map((cat) => /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "span",
-          {
-            onClick: () => {
-              setCurrentCategory(cat);
-              setTargetCategory(cat);
-            },
-            style: { fontSize: 11, padding: "3px 8px", borderRadius: 10, background: currentCategory === cat ? "#333" : "#eee", color: currentCategory === cat ? "white" : "#333", cursor: "pointer", whiteSpace: "nowrap" },
-            children: cat
-          },
-          cat
-        )) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "assets-grid", style: { marginTop: 10, maxHeight: "300px", overflowY: "auto" }, children: [
-          currentAssets.filter((asset) => asset.name.includes(searchTerm)).map((asset) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "asset-card", draggable: true, onDragStart: (e) => e.dataTransfer.setData("bio-render-url", asset.url), children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: asset.url, alt: asset.name, style: { width: "100%", height: "50px", objectFit: "contain" } }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "asset-name", style: { fontSize: 10, textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }, children: asset.name })
-          ] }, asset.id)),
-          currentAssets.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontSize: 12, color: "#999", textAlign: "center", marginTop: 20 }, children: "暂无素材" })
-        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { display: "flex", gap: 5, overflowX: "auto", marginTop: 10, paddingBottom: 5 }, children: Object.keys(categories).map((cat) => /* @__PURE__ */ jsxRuntimeExports.jsx("span", { onClick: () => {
+          setCurrentCategory(cat);
+          setTargetCategory(cat);
+        }, style: { fontSize: 11, padding: "3px 8px", borderRadius: 10, background: currentCategory === cat ? "#333" : "#eee", color: currentCategory === cat ? "white" : "#333", cursor: "pointer", whiteSpace: "nowrap" }, children: cat }, cat)) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "assets-grid", style: { marginTop: 10, maxHeight: "300px", overflowY: "auto" }, children: currentAssets.filter((asset) => asset.name.includes(searchTerm)).map((asset) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "asset-card", draggable: true, onDragStart: (e) => e.dataTransfer.setData("bio-render-url", asset.url), children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: asset.url, alt: asset.name, style: { width: "100%", height: "50px", objectFit: "contain" } }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "asset-name", children: asset.name })
+        ] }, asset.id)) }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { style: { display: "block", textAlign: "center", marginTop: 20, cursor: "pointer", color: "blue", fontSize: 12 }, children: [
-          isUploading ? "上传中..." : "☁️ 上传到当前分类",
+          isUploading ? "..." : "☁️ 上传",
           /* @__PURE__ */ jsxRuntimeExports.jsx("input", { type: "file", style: { display: "none" }, onChange: (e) => e.target.files && handleUpload(e.target.files[0]) })
         ] })
       ] }),
       activeTab === "项目" && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { marginTop: 20 }, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: handleSaveProject, style: { width: "100%", padding: 8, background: "#28a745", color: "white", border: "none", borderRadius: 4, cursor: "pointer" }, children: "💾 保存当前画布" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: handleSaveProject, style: { width: "100%", padding: 8, background: "#28a745", color: "white", border: "none", borderRadius: 4 }, children: "💾 保存" }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginTop: 10, maxHeight: "300px", overflowY: "auto" }, children: projects.map((p) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { padding: "8px", borderBottom: "1px solid #eee", display: "flex", justifyContent: "space-between", alignItems: "center" }, children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("span", { onClick: () => handleLoadProject(p.data), style: { cursor: "pointer", flex: 1 }, children: p.name }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { onClick: () => handleDeleteProject(p.id), style: { cursor: "pointer", color: "red", fontWeight: "bold", padding: "0 5px" }, children: "×" })
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { onClick: () => handleDeleteProject(p.id), style: { cursor: "pointer", color: "red", fontWeight: "bold" }, children: "×" })
         ] }, p.id)) })
       ] })
     ] }) })
@@ -12118,6 +12057,7 @@ function CustomSidebar({ currentUser, onLogout }) {
 function App() {
   const [session, setSession] = reactExports.useState(null);
   const [isStyleOpen, setIsStyleOpen] = reactExports.useState(true);
+  const [editorApp, setEditorApp] = reactExports.useState(null);
   reactExports.useEffect(() => {
     supabase.auth.getSession().then(({ data: { session: session2 } }) => {
       setSession(session2);
@@ -12129,24 +12069,48 @@ function App() {
   }, []);
   if (!session) return /* @__PURE__ */ jsxRuntimeExports.jsx(LoginScreen, { onLoginSuccess: () => {
   } });
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { width: "100vw", height: "100vh", position: "relative", overflow: "hidden" }, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx(TopNavigationBar, {}),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { position: "absolute", top: "50px", bottom: 0, left: 0, right: 0, backgroundColor: "#e5e5e5" }, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "button",
-        {
-          className: `style-panel-toggle ${isStyleOpen ? "active" : ""}`,
-          onClick: () => setIsStyleOpen(!isStyleOpen),
-          style: { top: "10px" },
-          children: isStyleOpen ? "🎨" : "◀"
-        }
-      ),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(ErrorBoundary, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Tldraw, { licenseKey: TLDRAW_LICENSE_KEY, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(CanvasDropZone, {}),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(CustomSidebar, { currentUser: session.user, onLogout: () => supabase.auth.signOut() })
-      ] }) })
-    ] })
-  ] });
+  return (
+    // 🟢 关键修改：在这里加上 className 控制右侧面板隐藏
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "div",
+      {
+        className: isStyleOpen ? "" : "hide-right-panel",
+        style: { width: "100vw", height: "100vh", position: "relative", overflow: "hidden" },
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(TopNavigationBar, {}),
+          editorApp && /* @__PURE__ */ jsxRuntimeExports.jsx(
+            CustomSidebar,
+            {
+              currentUser: session.user,
+              onLogout: () => supabase.auth.signOut(),
+              editorInstance: editorApp
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { position: "absolute", top: "50px", bottom: 0, left: 0, right: 0, backgroundColor: "#e5e5e5" }, children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              "button",
+              {
+                className: `style-panel-toggle ${isStyleOpen ? "active" : ""}`,
+                onClick: () => setIsStyleOpen(!isStyleOpen),
+                style: { top: "10px" },
+                children: isStyleOpen ? "🎨" : "◀"
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(ErrorBoundary, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Tldraw,
+              {
+                licenseKey: TLDRAW_KEY,
+                onMount: (editor) => {
+                  console.log("Tldraw 加载完成");
+                  setEditorApp(editor);
+                }
+              }
+            ) })
+          ] })
+        ]
+      }
+    )
+  );
 }
 ReactDOM.createRoot(document.getElementById("root")).render(
   /* @__PURE__ */ jsxRuntimeExports.jsx(React.StrictMode, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(App, {}) })
