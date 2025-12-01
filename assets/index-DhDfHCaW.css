@@ -3964,7 +3964,7 @@ html, body, #root {
    ========================================================================== */
 .sidebar-container {
   position: fixed !important;
-  top: 60px;
+  top: 100px;
   left: 15px;
   bottom: 15px;
   width: 260px;
