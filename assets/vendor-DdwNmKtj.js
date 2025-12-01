@@ -42227,7 +42227,7 @@ function getLicenseKeyFromEnv() {
   if (envLicenseKey !== void 0) {
     return envLicenseKey;
   }
-  envLicenseKey = getEnv(() => define_process_env_default$1.TLDRAW_LICENSE_KEY) || getEnv(() => define_process_env_default$1.NEXT_PUBLIC_TLDRAW_LICENSE_KEY) || getEnv(() => define_process_env_default$1.REACT_APP_TLDRAW_LICENSE_KEY) || getEnv(() => define_process_env_default$1.GATSBY_TLDRAW_LICENSE_KEY) || getEnv(() => define_process_env_default$1.VITE_TLDRAW_LICENSE_KEY) || getEnv(() => define_process_env_default$1.PUBLIC_TLDRAW_LICENSE_KEY) || getEnv(() => void 0) || getEnv(() => void 0) || getEnv(() => void 0) || getEnv(() => void 0) || getEnv(() => void 0) || getEnv(() => void 0) || null;
+  envLicenseKey = getEnv(() => define_process_env_default$1.TLDRAW_LICENSE_KEY) || getEnv(() => define_process_env_default$1.NEXT_PUBLIC_TLDRAW_LICENSE_KEY) || getEnv(() => define_process_env_default$1.REACT_APP_TLDRAW_LICENSE_KEY) || getEnv(() => define_process_env_default$1.GATSBY_TLDRAW_LICENSE_KEY) || getEnv(() => define_process_env_default$1.VITE_TLDRAW_LICENSE_KEY) || getEnv(() => define_process_env_default$1.PUBLIC_TLDRAW_LICENSE_KEY) || getEnv(() => void 0) || getEnv(() => void 0) || getEnv(() => void 0) || getEnv(() => void 0) || getEnv(() => "tldraw-2026-03-11/WyJlcHlNb2JOQiIsWyIqIl0sMTYsIjIwMjYtMDMtMTEiXQ.ASQfIycCDDPxWYntF0g6ykxx1pFsry8j3a6K4q8yRzaOZATPJZOyYboKbwp3luJnj0d7V3i24r8Wuguo04knMQ") || getEnv(() => void 0) || null;
   return envLicenseKey;
 }
 function getEnv(cb) {

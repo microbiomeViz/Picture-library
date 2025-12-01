@@ -1,4 +1,4 @@
-import { _ as __awaiter, g as getAugmentedNamespace, t as tslib_es6, a as getDefaultExportFromCjs, b as __rest, r as reactExports, j as jsxRuntimeExports, T as Tldraw, u as useEditor, R as ReactDOM, c as React } from "./vendor-CQY9YTSp.js";
+import { _ as __awaiter, g as getAugmentedNamespace, t as tslib_es6, a as getDefaultExportFromCjs, b as __rest, r as reactExports, j as jsxRuntimeExports, T as Tldraw, u as useEditor, R as ReactDOM, c as React } from "./vendor-DdwNmKtj.js";
 function _mergeNamespaces(n, m) {
   for (var i = 0; i < m.length; i++) {
     const e = m[i];
@@ -11835,7 +11835,7 @@ if (shouldShowDeprecationWarning()) {
 const SUPABASE_URL = "https://hhofyvimltossvlgfriv.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhob2Z5dmltbHRvc3N2bGdmcml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1MjAyNjYsImV4cCI6MjA4MDA5NjI2Nn0.paPgGikExh3xekXczyVDhSTttQT5vhsYzg9oZjCQvFk";
 const GEMINI_API_KEY = "你的_Gemini_Key";
-const TLDRAW_KEY = void 0;
+const TLDRAW_LICENSE_KEY = "tldraw-2026-03-11/WyJlcHlNb2JOQiIsWyIqIl0sMTYsIjIwMjYtMDMtMTEiXQ.ASQfIycCDDPxWYntF0g6ykxx1pFsry8j3a6K4q8yRzaOZATPJZOyYboKbwp3luJnj0d7V3i24r8Wuguo04knMQ";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 class ErrorBoundary extends reactExports.Component {
   constructor(props) {
@@ -12141,7 +12141,7 @@ function App() {
           children: isStyleOpen ? "🎨" : "◀"
         }
       ),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(ErrorBoundary, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Tldraw, { licenseKey: TLDRAW_KEY, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(ErrorBoundary, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Tldraw, { licenseKey: TLDRAW_LICENSE_KEY, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(CanvasDropZone, {}),
         /* @__PURE__ */ jsxRuntimeExports.jsx(CustomSidebar, { currentUser: session.user, onLogout: () => supabase.auth.signOut() })
       ] }) })

@@ -3947,7 +3947,7 @@ tldraw? probably.
 }
 
 /* ==========================================================================
-   全局设置
+   全局重置
    ========================================================================== */
 html, body, #root {
   width: 100vw;
@@ -3956,146 +3956,66 @@ html, body, #root {
   padding: 0;
   overflow: hidden; /* 禁止滚动 */
   background-color: #f0f0f0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 /* ==========================================================================
-   🟢 核心修复：侧边栏层级 (Z-Index)
+   🟢 核心修复：强制侧边栏在 Tldraw 上面
    ========================================================================== */
 
-/* 1. 侧边栏容器：改为 fixed 定位，层级设为最高 */
+/* 1. 侧边栏容器：给它加一个比天还大的层级 */
 .sidebar-container {
-  position: fixed !important;  /* 关键：钉在屏幕上，脱离 Tldraw 的遮挡 */
-  top: 50px !important;        /* 让出顶部导航栏的高度 */
+  position: fixed !important;  /* 必须是 fixed，钉在屏幕上 */
+  top: 50px !important;        /* 让出顶部导航栏 */
   left: 10px !important;
-  bottom: 10px !important;     /* 到底部留一点空隙 */
+  bottom: 10px !important;
   width: 280px;
-  height: auto !important;     /* 高度自动适应 */
+  height: auto !important;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-  z-index: 2147483647 !important; /* CSS 允许的最大层级，谁也盖不住 */
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  
+  /* 关键：CSS允许的最大层级 */
+  z-index: 2147483647 !important; 
+  
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  overflow: hidden;
+  transition: transform 0.3s ease;
 }
 
-/* 2. 折叠状态：移出屏幕 */
+/* 折叠状态 */
 .sidebar-container.collapsed {
   transform: translateX(-350px);
 }
 
-/* 3. 侧边栏开关按钮：也要置顶 */
+/* 2. 侧边栏开关按钮：也要在最上面 */
 .sidebar-toggle {
-  position: fixed !important;  /* 也是 fixed */
-  top: 60px !important;
-  left: 10px !important;
-  z-index: 2147483647 !important;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: white;
-  border: 1px solid #eee;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: opacity 0.3s;
-}
-
-/* 4. 强制 Tldraw 在最底层 */
-.tldraw-container {
-  z-index: 0 !important;
-  position: absolute !important;
-  inset: 0 !important;
-}
-
-/* ==========================================================================
-   内部组件样式
-   ========================================================================== */
-.sidebar-content {
-  padding: 16px;
-  overflow-y: auto;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #f0f0f0;
-  padding-bottom: 12px;
-}
-
-.search-input {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background: #f9f9f9;
-  font-size: 13px;
-  box-sizing: border-box;
-}
-
-.assets-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-
-.asset-card {
-  background: #fff;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: grab;
-  transition: all 0.2s;
-}
-.asset-card:hover {
-  border-color: #2684ff;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-}
-.asset-card img {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-  pointer-events: none;
-}
-.asset-name {
-  font-size: 10px;
-  color: #666;
-  margin-top: 4px;
-  text-align: center;
-  width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* 右侧颜色面板开关 */
-.style-panel-toggle {
   position: fixed !important;
   top: 60px !important;
-  right: 10px !important;
-  z-index: 2000 !important;
+  left: 10px !important;
   width: 40px;
   height: 40px;
   background: white;
   border-radius: 50%;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  z-index: 2147483647 !important;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+}
+
+/* 3. Tldraw 容器：强制压到最下面 */
+.tldraw-container {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 0 !important; /* 你给我下去 */
+}
+
+/* 4. 修复 Tldraw 内部 UI 可能遮挡的问题 */
+.tl-ui-layout {
+  z-index: 1 !important;
 }
 /* THIS CSS FILE IS GENERATED! DO NOT EDIT. OR EDIT. I'M A COMMENT NOT A COP */
 /* This file is created by the copy-css-files.mjs script in packages/tldraw. */
