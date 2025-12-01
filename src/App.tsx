@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Component, type ReactNode, type ErrorInfo } from 'react'
 import { Tldraw, useEditor } from 'tldraw'
 import { createClient } from '@supabase/supabase-js'
 import 'tldraw/tldraw.css'
@@ -10,25 +10,46 @@ import './App.css'
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY
+const TLDRAW_LICENSE_KEY = import.meta.env.VITE_TLDRAW_LICENSE_KEY
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 
 // =============================================================================
-// 2. 顶部导航栏 (独立组件)
+// 2. 防崩卫士 (Error Boundary)
+// =============================================================================
+class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean, error: Error | null }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error: Error) { return { hasError: true, error }; }
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) { console.error("网页崩溃详情:", error, errorInfo); }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: 20, color: 'red', background: '#fff', height: '100vh', zIndex: 99999999, position: 'relative' }}>
+          <h2>💥 网页崩溃了！</h2>
+          <p>错误信息：{this.state.error?.toString()}</p>
+          <button onClick={() => { localStorage.clear(); window.location.reload(); }} style={{ padding: '10px 20px', marginTop: 10, cursor: 'pointer' }}>
+            尝试清空缓存并刷新
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+// =============================================================================
+// 3. 顶部导航栏
 // =============================================================================
 function TopNavigationBar() {
     return (
         <div style={{
-            height: '50px',
-            background: '#ffffff',
-            borderBottom: '1px solid #e0e0e0',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'flex-end', 
-            padding: '0 20px',
-            zIndex: 1000, 
-            boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-            flexShrink: 0 
+            height: '50px', background: '#ffffff', borderBottom: '1px solid #e0e0e0',
+            display: 'flex', alignItems: 'center', justifyContent: 'flex-end', 
+            padding: '0 20px', zIndex: 3000, boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+            position: 'absolute', top: 0, left: 0, right: 0
         }}>
             <span style={{ marginRight: '15px', color: '#666', fontWeight: 'bold', fontSize: '14px' }}>
                 Lab Chen 在线协作平台
@@ -43,7 +64,7 @@ function TopNavigationBar() {
 }
 
 // =============================================================================
-// 3. 登录界面
+// 4. 登录界面
 // =============================================================================
 function LoginScreen({ onLoginSuccess }: { onLoginSuccess: () => void }) {
     const [email, setEmail] = useState('')
@@ -75,7 +96,7 @@ function LoginScreen({ onLoginSuccess }: { onLoginSuccess: () => void }) {
 }
 
 // =============================================================================
-// 4. 画布拖拽监听 (必须在 Tldraw 内部)
+// 5. 画布拖拽监听
 // =============================================================================
 function CanvasDropZone() {
     const editor: any = useEditor();
@@ -105,14 +126,14 @@ function CanvasDropZone() {
 }
 
 // =============================================================================
-// 5. 侧边栏 (必须在 Tldraw 内部)
+// 6. 侧边栏 (已修复防消失和防崩溃)
 // =============================================================================
 function CustomSidebar({ currentUser, onLogout }: { currentUser: any, onLogout: () => void }) {
     const editor: any = useEditor()
     const [isOpen, setIsOpen] = useState(true) 
     const [activeTab, setActiveTab] = useState('资源库') 
     
-    // 资源数据
+    // 数据状态
     const [categories, setCategories] = useState<any>({});
     const [currentCategory, setCurrentCategory] = useState('实验仪器')
     const [searchTerm, setSearchTerm] = useState('') 
@@ -125,26 +146,37 @@ function CustomSidebar({ currentUser, onLogout }: { currentUser: any, onLogout: 
     const [isUploading, setIsUploading] = useState(false)
     const [targetCategory, setTargetCategory] = useState('实验仪器')
 
+    // 🟢 安全加载：处理空数据防止崩溃
     const fetchAssets = async () => {
-        const { data } = await supabase.from('assets').select('*');
-        if (data) {
-            const newCats: any = {};
-            data.forEach((item: any) => {
-                if (!newCats[item.category]) newCats[item.category] = [];
-                newCats[item.category].push(item);
-            });
-            setCategories((prev: any) => {
-                const merged = { ...newCats };
-                Object.keys(prev).forEach(key => {
-                    if (!merged[key] && prev[key].length === 0) merged[key] = [];
-                });
-                return merged;
-            });
-            if (!newCats[currentCategory] && Object.keys(newCats).length > 0) {
-                 setCurrentCategory(Object.keys(newCats)[0]);
-                 setTargetCategory(Object.keys(newCats)[0]);
+        try {
+            const { data, error } = await supabase.from('assets').select('*');
+            
+            // 🛠️ 修复点：在这里使用 error 变量，报错就会消失
+            if (error) {
+                console.error("数据库读取错误:", error);
+                throw error; // 或者直接 return
             }
-        }
+
+            if (data) {
+                const newCats: any = {};
+                // 处理空数据
+                if (data.length === 0) newCats['默认'] = [];
+                else {
+                    data.forEach((item: any) => {
+                        const cat = item.category || '未分类';
+                        if (!newCats[cat]) newCats[cat] = [];
+                        newCats[cat].push(item);
+                    });
+                }
+                setCategories(newCats);
+                // 确保 currentCategory 有效
+                const keys = Object.keys(newCats);
+                if (keys.length > 0 && !newCats[currentCategory]) {
+                    setCurrentCategory(keys[0]);
+                    setTargetCategory(keys[0]);
+                }
+            }
+        } catch (e) { console.error("加载失败", e); }
     }
 
     const fetchProjects = async () => {
@@ -153,9 +185,9 @@ function CustomSidebar({ currentUser, onLogout }: { currentUser: any, onLogout: 
     }
 
     useEffect(() => {
-        if (activeTab === '资源库') fetchAssets();
-        if (activeTab === '项目') fetchProjects();
-    }, [activeTab]);
+        fetchAssets();
+        fetchProjects();
+    }, []);
 
     const handleUpload = async (file: File) => {
         setIsUploading(true);
@@ -181,13 +213,8 @@ function CustomSidebar({ currentUser, onLogout }: { currentUser: any, onLogout: 
        if (!prompt || !GEMINI_API_KEY) return alert("请输入描述或配置Key");
        setIsAiLoading(true);
        try {
-           let stylePrompt = "";
-           if (aiStyle === 'Flat') stylePrompt = "in flat vector art style, simple colors";
-           if (aiStyle === '3D') stylePrompt = "in 3d render style, glossy, high quality";
-           if (aiStyle === 'Sketch') stylePrompt = "in hand-drawn sketch style, black and white lines";
-           
            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`;
-           const systemPrompt = `You are a scientific illustrator. Create an SVG code for: "${prompt}" ${stylePrompt}. Return ONLY raw <svg> code. No markdown.`;
+           const systemPrompt = `Create an SVG code for: "${prompt}" in ${aiStyle} style. Return ONLY raw <svg> code.`;
            const response = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] }) });
            const data = await response.json();
            let svgCode = data.candidates[0].content.parts[0].text.replace(/```xml|```svg|```/g, '').trim();
@@ -201,28 +228,35 @@ function CustomSidebar({ currentUser, onLogout }: { currentUser: any, onLogout: 
        } catch (error: any) { alert("生成失败: " + error.message); } finally { setIsAiLoading(false); }
    }
 
-   const handleSaveProject = async () => {
+    const handleSaveProject = async () => {
         const name = window.prompt('请输入项目名称', '未命名实验图');
         if (!name) return;
         const snapshot = editor.store.getSnapshot();
         const { error } = await supabase.from('projects').insert({ name: name, data: snapshot, user_id: currentUser.id });
         if (error) alert('保存失败: ' + error.message);
-        else { alert('项目已保存到云端'); fetchProjects(); }
+        else { alert('✅ 保存成功'); fetchProjects(); }
     }
 
     const handleLoadProject = (projectData: any) => {
-        if (confirm('加载云端项目会覆盖当前画布，确定吗？')) {
-            editor.store.loadSnapshot(projectData);
-        }
+        if (confirm('加载云端项目覆盖当前画布？')) editor.store.loadSnapshot(projectData);
     }
+    
+    const handleDeleteProject = async (id: number) => {
+        if (!confirm('确定删除？')) return;
+        await supabase.from('projects').delete().eq('id', id);
+        fetchProjects();
+    }
+
+    // 🟢 关键：安全获取列表，防止 5-6 秒后崩溃
+    const currentAssets = (categories && currentCategory && categories[currentCategory]) ? categories[currentCategory] : [];
 
     return (
         <>
-            {!isOpen && <div className="sidebar-toggle" onClick={() => setIsOpen(true)} style={{left: 10, zIndex: 3000}}>➡️</div>}
+            {!isOpen && <div className="sidebar-toggle" onClick={() => setIsOpen(true)}>➡️</div>}
             
-            <div className={`sidebar-container ${!isOpen ? 'collapsed' : ''}`} style={{zIndex: 3000}}>
+            <div className={`sidebar-container ${!isOpen ? 'collapsed' : ''}`}>
                 <div className="sidebar-content">
-                    <div className="header-row" style={{alignItems:'center', gap: 10}}>
+                    <div className="header-row">
                         <div style={{flex: 1}}><h3 style={{margin:0}}>工具箱</h3></div>
                         <button onClick={onLogout} style={{fontSize: 10, padding: '2px 5px'}}>退出</button>
                         <button onClick={() => setIsOpen(false)} style={{cursor:'pointer'}}>⬅️</button>
@@ -257,15 +291,15 @@ function CustomSidebar({ currentUser, onLogout }: { currentUser: any, onLogout: 
                             </div>
 
                             <div className="assets-grid" style={{marginTop: 10, maxHeight: '300px', overflowY: 'auto'}}>
-                                {categories[currentCategory]
-                                    ?.filter((asset: any) => asset.name.includes(searchTerm))
+                                {currentAssets
+                                    .filter((asset: any) => asset.name.includes(searchTerm))
                                     .map((asset: any) => (
                                     <div key={asset.id} className="asset-card" draggable onDragStart={e => e.dataTransfer.setData('bio-render-url', asset.url)}>
                                         <img src={asset.url} alt={asset.name} style={{width:'100%', height:'50px', objectFit:'contain'}} />
                                         <div className="asset-name" style={{fontSize:10, textAlign:'center', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{asset.name}</div>
                                     </div>
                                 ))}
-                                {(!categories[currentCategory] || categories[currentCategory].length === 0) && <div style={{fontSize:12, color:'#999', textAlign:'center', marginTop:20}}>暂无素材</div>}
+                                {currentAssets.length === 0 && <div style={{fontSize:12, color:'#999', textAlign:'center', marginTop:20}}>暂无素材</div>}
                             </div>
 
                             <label style={{display:'block', textAlign:'center', marginTop:20, cursor:'pointer', color:'blue', fontSize:12}}>
@@ -277,11 +311,12 @@ function CustomSidebar({ currentUser, onLogout }: { currentUser: any, onLogout: 
 
                     {activeTab === '项目' && (
                         <div style={{marginTop: 20}}>
-                            <button onClick={handleSaveProject} style={{width:'100%', padding:8, background:'#28a745', color:'white', border:'none', borderRadius:4}}>💾 保存当前画布</button>
-                            <div style={{marginTop:10}}>
+                            <button onClick={handleSaveProject} style={{width:'100%', padding:8, background:'#28a745', color:'white', border:'none', borderRadius:4, cursor:'pointer'}}>💾 保存当前画布</button>
+                            <div style={{marginTop:10, maxHeight: '300px', overflowY: 'auto'}}>
                                 {projects.map(p => (
-                                    <div key={p.id} onClick={() => handleLoadProject(p.data)} style={{padding:8, borderBottom:'1px solid #eee', cursor:'pointer', fontSize:13}}>
-                                        {p.name} <span style={{fontSize:10, color:'#999'}}>{new Date(p.created_at).toLocaleDateString()}</span>
+                                    <div key={p.id} style={{padding:'8px', borderBottom:'1px solid #eee', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                                        <span onClick={() => handleLoadProject(p.data)} style={{cursor:'pointer', flex:1}}>{p.name}</span>
+                                        <span onClick={() => handleDeleteProject(p.id)} style={{cursor:'pointer', color:'red', fontWeight:'bold', padding:'0 5px'}}>×</span>
                                     </div>
                                 ))}
                             </div>
@@ -294,7 +329,7 @@ function CustomSidebar({ currentUser, onLogout }: { currentUser: any, onLogout: 
 }
 
 // =============================================================================
-// 6. 主程序
+// 7. 主程序 App
 // =============================================================================
 function App() {
     const [session, setSession] = useState<any>(null)
@@ -309,34 +344,29 @@ function App() {
     if (!session) return <LoginScreen onLoginSuccess={() => {}} /> 
 
     return (
-        <div style={{ 
-            position: 'fixed', inset: 0, display: 'flex', flexDirection: 'column', 
-            background: '#f8f9fa' 
-        }}>
-            {/* 1. 顶部导航栏 */}
+        <div style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden' }}>
+            
+            {/* 1. 顶部导航栏 (z-index 3000) */}
             <TopNavigationBar />
 
             {/* 2. 画布区域 */}
-            <div style={{ position: 'relative', flex: 1, width: '100%', height: '100%', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', top: '50px', bottom: 0, left: 0, right: 0, backgroundColor: '#e5e5e5' }}>
                 
-                {/* 侧边栏开关 */}
                 <button 
                     className={`style-panel-toggle ${isStyleOpen ? 'active' : ''}`}
                     onClick={() => setIsStyleOpen(!isStyleOpen)}
-                    style={{ top: '10px', zIndex: 2000 }}
+                    style={{ top: '10px' }}
                 >
                     {isStyleOpen ? '🎨' : '◀'}
                 </button>
 
-                {/* ⚠️ 核心修正：CustomSidebar 必须放在 Tldraw 内部 */}
-                {session?.user?.id && (
-                    <div style={{ position: 'absolute', inset: 0 }}>
-                        <Tldraw>
-                            <CanvasDropZone />
-                            <CustomSidebar currentUser={session.user} onLogout={() => supabase.auth.signOut()} />
-                        </Tldraw>
-                    </div>
-                )}
+                {/* 3. ErrorBoundary 保护画布 */}
+                <ErrorBoundary>
+                    <Tldraw licenseKey={TLDRAW_LICENSE_KEY}>
+                        <CanvasDropZone />
+                        <CustomSidebar currentUser={session.user} onLogout={() => supabase.auth.signOut()} />
+                    </Tldraw> 
+                </ErrorBoundary>
             </div>
         </div>
     )

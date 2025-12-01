@@ -2,14 +2,14 @@
 	"name": "my-biorender-clone",
 	"private": true,
 	"version": "0.0.0",
-    "homepage": "https://microbiomeViz.github.io/Picture-library",
+	"homepage": "https://microbiomeViz.github.io/Picture-library",
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
 		"build": "tsc && vite build",
 		"preview": "vite preview",
 		"predeploy": "npm run build",
-        "deploy": "gh-pages -d dist"
+		"deploy": "gh-pages -d dist"
 	},
 	"dependencies": {
 		"@supabase/supabase-js": "^2.86.0",
@@ -20,6 +20,7 @@
 	"devDependencies": {
 		"@types/react": "^18.3.18",
 		"@types/react-dom": "^18.3.5",
+		"@vitejs/plugin-react": "^5.1.1",
 		"@vitejs/plugin-react-swc": "^3.10.2",
 		"gh-pages": "^6.3.0",
 		"typescript": "^5.8.3",
