@@ -11845,90 +11845,37 @@ class ErrorBoundary extends reactExports.Component {
     return { hasError: true, error };
   }
   componentDidCatch(error, errorInfo) {
-    console.error("崩溃详情:", error, errorInfo);
+    console.error("崩溃:", error, errorInfo);
   }
   render() {
-    if (this.state.hasError) {
-      return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { padding: 20, color: "red" }, children: "💥 出错了，请刷新页面" });
-    }
-    return this.props.children;
+    return this.state.hasError ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { color: "red", padding: 20 }, children: "💥 发生错误，请刷新" }) : this.props.children;
   }
 }
 function TopNavigationBar() {
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: {
-    height: "50px",
-    background: "#ffffff",
-    borderBottom: "1px solid #e0e0e0",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    padding: "0 20px",
-    zIndex: 5e3,
-    boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0
-  }, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { marginRight: "15px", color: "#666", fontWeight: "bold", fontSize: "14px" }, children: "Picture library 在线协作平台" }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: "https://hhofyvimltossvlgfriv.supabase.co/storage/v1/object/public/bio-icons/1111.png", alt: "Logo", style: { height: "36px", borderRadius: "4px" } })
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { height: "50px", background: "#fff", borderBottom: "1px solid #ddd", display: "flex", alignItems: "center", justifyContent: "flex-end", padding: "0 20px", position: "absolute", top: 0, left: 0, right: 0, zIndex: 5e3 }, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { marginRight: 15, fontWeight: "bold", color: "#555", fontSize: 14 }, children: "Picture library 在线协作平台" }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: "https://hhofyvimltossvlgfriv.supabase.co/storage/v1/object/public/bio-icons/1111.png", style: { height: 36, borderRadius: 4 } })
   ] });
 }
 function LoginScreen({ onLoginSuccess }) {
   const [email, setEmail] = reactExports.useState("");
   const [password, setPassword] = reactExports.useState("");
   const [loading, setLoading] = reactExports.useState(false);
-  const [errorMsg, setErrorMsg] = reactExports.useState("");
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setErrorMsg("");
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
-    if (error) setErrorMsg("账号或密码错误");
-    else onLoginSuccess();
+    if (!error) onLoginSuccess();
+    else alert("登录失败");
   };
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { position: "fixed", inset: 0, background: "#f5f5f7", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 9999 }, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { background: "white", padding: "40px", borderRadius: "12px", width: "320px", textAlign: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { style: { marginTop: 0, color: "#333" }, children: "Picture library 资源库" }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("form", { onSubmit: handleLogin, style: { display: "flex", flexDirection: "column", gap: "15px" }, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("input", { type: "email", placeholder: "邮箱", required: true, value: email, onChange: (e) => setEmail(e.target.value), style: { padding: "10px", border: "1px solid #ddd", borderRadius: "6px" } }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("input", { type: "password", placeholder: "密码", required: true, value: password, onChange: (e) => setPassword(e.target.value), style: { padding: "10px", border: "1px solid #ddd", borderRadius: "6px" } }),
-      errorMsg && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { color: "red", fontSize: 12 }, children: errorMsg }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "submit", disabled: loading, style: { padding: "10px", background: "#2684ff", color: "white", border: "none", borderRadius: "6px", cursor: "pointer" }, children: loading ? "登录中..." : "进入实验室" })
-    ] })
+  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { position: "fixed", inset: 0, background: "#f5f5f7", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 9999 }, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("form", { onSubmit: handleLogin, style: { background: "white", padding: 40, borderRadius: 12, width: 300, textAlign: "center" }, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { children: "Picture library 登录" }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("input", { placeholder: "邮箱", value: email, onChange: (e) => setEmail(e.target.value), style: { width: "100%", marginBottom: 10, padding: 10 } }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("input", { type: "password", placeholder: "密码", value: password, onChange: (e) => setPassword(e.target.value), style: { width: "100%", marginBottom: 10, padding: 10 } }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("button", { disabled: loading, style: { width: "100%", padding: 10, background: "#2684ff", color: "white", border: "none" }, children: loading ? "..." : "进入" })
   ] }) });
 }
-const insertImageToCanvas = (editor, url, clientX, clientY) => {
-  const point = editor.screenToPage({ x: clientX, y: clientY });
-  editor.createShape({
-    type: "image",
-    x: point.x - 50,
-    y: point.y - 50,
-    props: {
-      w: 100,
-      // 默认大小
-      h: 100,
-      url,
-      assetId: null
-      // 确保不关联 asset
-    }
-  });
-  const img = new Image();
-  img.src = url;
-  img.onload = () => {
-    const shapes = editor.getCurrentPageShapes();
-    const shape = shapes.find((s) => s.props.url === url);
-    if (shape) {
-      const ratio = img.width / img.height;
-      editor.updateShape({
-        id: shape.id,
-        type: "image",
-        props: { w: 100, h: 100 / ratio }
-      });
-    }
-  };
-};
-const DRAG_KEY = "picture-library-drag-data";
 function CanvasDropZone({ editor }) {
   reactExports.useEffect(() => {
     if (!editor) return;
@@ -11936,16 +11883,30 @@ function CanvasDropZone({ editor }) {
       e.preventDefault();
       e.dataTransfer.dropEffect = "copy";
     };
-    const handleDrop = async (e) => {
-      const assetData = e.dataTransfer?.getData(DRAG_KEY);
-      if (!assetData) return;
+    const handleDrop = (e) => {
+      const assetJson = e.dataTransfer?.getData("picture-lib-asset");
+      if (!assetJson) return;
       e.preventDefault();
+      e.stopPropagation();
       e.stopImmediatePropagation();
       try {
-        const { url } = JSON.parse(assetData);
-        insertImageToCanvas(editor, url, e.clientX, e.clientY);
-      } catch (error) {
-        console.error(error);
+        const { url, w, h } = JSON.parse(assetJson);
+        const point = editor.screenToPage({ x: e.clientX, y: e.clientY });
+        editor.createShape({
+          type: "image",
+          x: point.x - (w || 100) / 2,
+          y: point.y - (h || 100) / 2,
+          props: {
+            w: w || 100,
+            h: h || 100,
+            url,
+            // 这里直接填 URL，如果桶是 Public 的就能显示
+            assetId: null
+            // 不关联 asset 库，纯外链图片
+          }
+        });
+      } catch (err) {
+        console.error(err);
       }
     };
     window.addEventListener("dragover", handleDragOver, true);
@@ -11960,28 +11921,24 @@ function CanvasDropZone({ editor }) {
 function CustomSidebar({ currentUser, onLogout, editorInstance }) {
   const editor = editorInstance;
   const [isOpen, setIsOpen] = reactExports.useState(true);
-  const DEFAULT_CATS = ["实验仪器", "微生物", "植物", "盆栽", "试剂耗材"];
   const [categories, setCategories] = reactExports.useState({});
-  const [currentCategory, setCurrentCategory] = reactExports.useState(DEFAULT_CATS[0]);
+  const DEFAULT_CATS = ["实验仪器", "微生物", "植物", "盆栽", "试剂耗材"];
   const [catList, setCatList] = reactExports.useState(DEFAULT_CATS);
-  const [searchTerm, setSearchTerm] = reactExports.useState("");
+  const [currentCategory, setCurrentCategory] = reactExports.useState(DEFAULT_CATS[0]);
   const [isUploading, setIsUploading] = reactExports.useState(false);
+  const [searchTerm, setSearchTerm] = reactExports.useState("");
   const fetchAssets = async () => {
-    const { data, error } = await supabase.from("assets").select("*");
-    if (error) {
-      console.error(error);
-      return;
-    }
+    const { data } = await supabase.from("assets").select("*");
     if (data) {
       const newCats = {};
       catList.forEach((c) => newCats[c] = []);
       data.forEach((item) => {
-        const cat = item.category || "未分类";
-        if (!newCats[cat]) {
-          newCats[cat] = [];
-          if (!catList.includes(cat)) setCatList((prev) => [...prev, cat]);
+        const c = item.category || "未分类";
+        if (!newCats[c]) {
+          newCats[c] = [];
+          if (!catList.includes(c)) setCatList((p) => [...p, c]);
         }
-        newCats[cat].push(item);
+        newCats[c].push(item);
       });
       setCategories(newCats);
     }
@@ -11989,217 +11946,180 @@ function CustomSidebar({ currentUser, onLogout, editorInstance }) {
   reactExports.useEffect(() => {
     fetchAssets();
   }, []);
-  const handleLocalUpload = async (file) => {
+  const handleLocalUpload = (file) => {
     setIsUploading(true);
-    try {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const base64Url = e.target?.result;
-        const fileName = file.name.split(".")[0];
-        const ext = file.name.split(".").pop();
-        const path = `${Date.now()}.${ext}`;
-        await supabase.storage.from("bio-icons").upload(path, file);
-        await supabase.from("assets").insert({
-          name: fileName,
-          url: base64Url,
-          // 🟢 这里存的是 base64，不是 http 链接
-          category: currentCategory,
-          user_id: currentUser.id
-        });
-        alert("✅ 上传成功 (Base64模式)");
-        fetchAssets();
-      };
-      reader.readAsDataURL(file);
-    } catch (err) {
-      alert("上传失败: " + err.message);
-    } finally {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const base64 = e.target?.result;
+      const fileName = file.name.split(".")[0];
+      await supabase.from("assets").insert({
+        name: fileName,
+        url: base64,
+        // 直接存 Base64，绕过 Supabase URL 限制
+        category: currentCategory,
+        user_id: currentUser.id
+      });
+      alert("✅ 上传成功");
       setIsUploading(false);
-    }
+      fetchAssets();
+    };
+    reader.readAsDataURL(file);
   };
   const handleAssetClick = (url) => {
     if (!editor) return;
     const { w, h } = editor.getViewportScreenBounds();
-    insertImageToCanvas(editor, url, w / 2, h / 2);
+    editor.createShape({
+      type: "image",
+      x: editor.screenToPage({ x: w / 2, y: h / 2 }).x - 50,
+      y: editor.screenToPage({ x: w / 2, y: h / 2 }).y - 50,
+      props: { w: 100, h: 100, url }
+    });
   };
-  const handleDeleteAsset = async (e, id, name) => {
+  const handleDeleteAsset = async (e, id) => {
     e.stopPropagation();
-    if (!confirm(`删除 "${name}" ？`)) return;
-    const { error } = await supabase.from("assets").delete().eq("id", id);
-    if (error) alert(error.message);
-    else fetchAssets();
-  };
-  const handleRenameAsset = async (e, id, oldName) => {
-    e.stopPropagation();
-    const newName = prompt("新名称:", oldName);
-    if (!newName || newName === oldName) return;
-    const { error } = await supabase.from("assets").update({ name: newName }).eq("id", id);
-    if (error) alert(error.message);
-    else fetchAssets();
-  };
-  const handleMoveAsset = async (e, id, currentCat) => {
-    e.stopPropagation();
-    const targetCat = prompt(`移动到分组 (当前: ${currentCat})`, currentCat);
-    if (!targetCat || targetCat === currentCat) return;
-    if (!catList.includes(targetCat)) setCatList((prev) => [...prev, targetCat]);
-    const { error } = await supabase.from("assets").update({ category: targetCat }).eq("id", id);
-    if (error) alert(error.message);
-    else fetchAssets();
-  };
-  const handleAddCategory = () => {
-    const name = prompt("新分组名称:");
-    if (name && !catList.includes(name)) {
-      setCatList([...catList, name]);
-      setCategories({ ...categories, [name]: [] });
-      setCurrentCategory(name);
+    if (confirm("删除?")) {
+      await supabase.from("assets").delete().eq("id", id);
+      fetchAssets();
     }
   };
-  const handleDeleteCategory = async (e, catName) => {
+  const handleRenameAsset = async (e, id, old) => {
     e.stopPropagation();
-    if (DEFAULT_CATS.includes(catName)) return alert("默认分组不可删");
-    if (!confirm(`删除 "${catName}" ？图片将移至 "未分类"`)) return;
-    await supabase.from("assets").update({ category: "未分类" }).eq("category", catName);
-    const newCatList = catList.filter((c) => c !== catName);
-    setCatList(newCatList);
-    setCurrentCategory(newCatList[0] || "未分类");
-    fetchAssets();
+    const n = prompt("重命名:", old);
+    if (n && n !== old) {
+      await supabase.from("assets").update({ name: n }).eq("id", id);
+      fetchAssets();
+    }
   };
-  const handleRenameCategory = (oldName) => {
-    const newName = prompt(`重命名 "${oldName}" 为:`, oldName);
-    if (newName && newName !== oldName) alert(`演示：请自行接入后端批量更新接口`);
+  const handleMoveAsset = async (e, id, oldCat) => {
+    e.stopPropagation();
+    const n = prompt("移动到:", oldCat);
+    if (n && n !== oldCat) {
+      await supabase.from("assets").update({ category: n }).eq("id", id);
+      fetchAssets();
+    }
   };
-  const downloadBlob = (blob, filename) => {
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    link.click();
-    window.URL.revokeObjectURL(url);
+  const handleAddCategory = () => {
+    const n = prompt("新分组:");
+    if (n && !catList.includes(n)) {
+      setCatList([...catList, n]);
+      setCurrentCategory(n);
+    }
   };
-  const handleExport = async (format) => {
+  const handleDeleteCategory = async (e, c) => {
+    e.stopPropagation();
+    if (confirm("删除分组?")) {
+      await supabase.from("assets").update({ category: "未分类" }).eq("category", c);
+      setCatList(catList.filter((x) => x !== c));
+      fetchAssets();
+    }
+  };
+  const handleExportPng = async () => {
     if (!editor) return;
+    const ids = Array.from(editor.getCurrentPageShapeIds());
+    if (ids.length === 0) return alert("画布为空");
     try {
-      const shapeIds = Array.from(editor.getCurrentPageShapeIds());
-      if (shapeIds.length === 0) return alert("画布是空的");
-      const svg = await editor.getSvg(shapeIds);
+      const svg = await editor.getSvg(ids);
       if (!svg) return;
-      const name = `picture-library-export-${Date.now()}`;
-      if (format === "svg") {
-        const blob = new Blob([new XMLSerializer().serializeToString(svg)], { type: "image/svg+xml" });
-        downloadBlob(blob, name + ".svg");
-      } else {
-        const svgString = new XMLSerializer().serializeToString(svg);
-        const img = new Image();
-        img.src = "data:image/svg+xml;base64," + window.btoa(unescape(encodeURIComponent(svgString)));
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          const w = parseFloat(svg.getAttribute("width") || "1000");
-          const h = parseFloat(svg.getAttribute("height") || "1000");
-          canvas.width = w * 2;
-          canvas.height = h * 2;
-          const ctx = canvas.getContext("2d");
-          if (ctx) {
-            ctx.scale(2, 2);
-            ctx.drawImage(img, 0, 0, w, h);
-            canvas.toBlob((blob) => {
-              if (blob) downloadBlob(blob, name + ".png");
-            });
-          }
-        };
-      }
+      const svgStr = new XMLSerializer().serializeToString(svg);
+      const img = new Image();
+      img.src = "data:image/svg+xml;base64," + window.btoa(unescape(encodeURIComponent(svgStr)));
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const w = parseFloat(svg.getAttribute("width") || "1000");
+        const h = parseFloat(svg.getAttribute("height") || "1000");
+        canvas.width = w * 2;
+        canvas.height = h * 2;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.scale(2, 2);
+          ctx.drawImage(img, 0, 0, w, h);
+          canvas.toBlob((b) => {
+            if (b) {
+              const a = document.createElement("a");
+              a.href = URL.createObjectURL(b);
+              a.download = "export.png";
+              a.click();
+            }
+          });
+        }
+      };
     } catch (e) {
       alert("导出失败");
     }
   };
-  const currentList = categories[currentCategory] || [];
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-    !isOpen && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "sidebar-toggle", onClick: () => setIsOpen(true), children: "➡️" }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `sidebar-container ${!isOpen ? "collapsed" : ""}`, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "sidebar-header", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" }, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { style: { margin: 0, fontSize: 16 }, children: "Picture library 资源库" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: () => setIsOpen(false), style: { border: "none", background: "none", cursor: "pointer" }, children: "⬅️" })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "user-info-box", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { style: { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "140px" }, children: [
-            "👤 ",
-            currentUser.email
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: "logout-btn", onClick: onLogout, children: "切换" })
-        ] })
+  const list = categories[currentCategory] || [];
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `sidebar-container ${!isOpen ? "collapsed" : ""}`, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "sidebar-header", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", justifyContent: "space-between" }, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { children: "Picture library" }),
+        " ",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: () => setIsOpen(false), children: "⬅️" })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "sidebar-content", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", gap: 5, alignItems: "center" }, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "category-tabs", children: catList.map((cat) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
-            "div",
-            {
-              className: `category-tab ${currentCategory === cat ? "active" : ""}`,
-              onClick: () => setCurrentCategory(cat),
-              onDoubleClick: () => handleRenameCategory(cat),
-              title: "双击重命名",
-              children: [
-                cat,
-                !DEFAULT_CATS.includes(cat) && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "cat-delete-btn", onClick: (e) => handleDeleteCategory(e, cat), children: "×" })
-              ]
-            },
-            cat
-          )) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: handleAddCategory, style: { fontSize: 16, border: "none", background: "none", cursor: "pointer" }, title: "新建", children: "+" })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("input", { className: "search-input", placeholder: "🔍 搜索...", value: searchTerm, onChange: (e) => setSearchTerm(e.target.value), style: { width: "100%", padding: 8, border: "1px solid #ddd", borderRadius: 6 } }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "assets-grid", children: currentList.filter((a) => a.name.includes(searchTerm)).map((asset) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          "div",
-          {
-            className: "asset-card",
-            onClick: () => handleAssetClick(asset.url),
-            draggable: true,
-            onDragStart: (e) => e.dataTransfer.setData(DRAG_KEY, JSON.stringify({ url: asset.url })),
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: asset.url, alt: asset.name }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "asset-name", title: "双击重命名", onDoubleClick: (e) => handleRenameAsset(e, asset.id, asset.name), children: asset.name }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "card-actions", children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: "icon-btn btn-move", title: "移动分组", onClick: (e) => handleMoveAsset(e, asset.id, asset.category), children: "➡" }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: "icon-btn btn-delete", title: "删除", onClick: (e) => handleDeleteAsset(e, asset.id, asset.name), children: "×" })
-              ] })
-            ]
-          },
-          asset.id
-        )) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { style: { display: "block", textAlign: "center", padding: 10, border: "1px dashed #ccc", borderRadius: 6, cursor: "pointer", color: "#2684ff", fontSize: 12 }, children: [
-          isUploading ? "..." : "📂 从本地导入",
-          /* @__PURE__ */ jsxRuntimeExports.jsx("input", { type: "file", accept: ".png,.jpg,.svg", style: { display: "none" }, onChange: (e) => e.target.files && handleLocalUpload(e.target.files[0]) })
-        ] })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "sidebar-footer", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "export-title", children: "导出作品" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "export-buttons", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: "export-btn", onClick: () => handleExport("svg"), children: "🎨 SVG (Illustrator)" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: "export-btn", onClick: () => handleExport("png"), children: "🖼️ PNG (图片)" })
-        ] })
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "user-info-box", children: [
+        "👤 ",
+        currentUser.email,
+        " ",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: "logout-btn", onClick: onLogout, children: "退出" })
       ] })
-    ] })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "sidebar-content", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", gap: 5, overflowX: "auto" }, children: [
+        catList.map((c) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `category-tab ${currentCategory === c ? "active" : ""}`, onClick: () => setCurrentCategory(c), children: [
+          c,
+          " ",
+          !DEFAULT_CATS.includes(c) && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "cat-delete-btn", onClick: (e) => handleDeleteCategory(e, c), children: "×" })
+        ] }, c)),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: handleAddCategory, children: "+" })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("input", { className: "search-input", placeholder: "搜索...", value: searchTerm, onChange: (e) => setSearchTerm(e.target.value) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "assets-grid", children: list.filter((a) => a.name.includes(searchTerm)).map((a) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        "div",
+        {
+          className: "asset-card",
+          onClick: () => handleAssetClick(a.url),
+          draggable: true,
+          onDragStart: (e) => e.dataTransfer.setData("picture-lib-asset", JSON.stringify({ url: a.url, w: 100, h: 100 })),
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: a.url, alt: a.name }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "asset-name", onDoubleClick: (e) => handleRenameAsset(e, a.id, a.name), children: a.name }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "card-actions", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: "icon-btn btn-move", onClick: (e) => handleMoveAsset(e, a.id, a.category), children: "➡" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: "icon-btn btn-delete", onClick: (e) => handleDeleteAsset(e, a.id), children: "×" })
+            ] })
+          ]
+        },
+        a.id
+      )) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { style: { display: "block", textAlign: "center", padding: 10, border: "1px dashed #ccc", marginTop: 10, cursor: "pointer" }, children: [
+        isUploading ? "上传中..." : "📂 导入本地图片",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("input", { type: "file", accept: "image/*", style: { display: "none" }, onChange: (e) => e.target.files && handleLocalUpload(e.target.files[0]) })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "sidebar-footer", children: /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: "export-btn", onClick: handleExportPng, children: "🖼️ 导出 PNG" }) }),
+    !isOpen && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "sidebar-toggle", onClick: () => setIsOpen(true), children: "➡️" })
   ] });
 }
 function App() {
   const [session, setSession] = reactExports.useState(null);
   const [editorApp, setEditorApp] = reactExports.useState(null);
-  const [isRightPanelOpen, setIsRightPanelOpen] = reactExports.useState(true);
+  const [panelOpen, setPanelOpen] = reactExports.useState(true);
   reactExports.useEffect(() => {
     supabase.auth.getSession().then(({ data: { session: session2 } }) => {
       setSession(session2);
     });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session2) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session2) => {
       setSession(session2);
     });
     return () => subscription.unsubscribe();
   }, []);
   if (!session) return /* @__PURE__ */ jsxRuntimeExports.jsx(LoginScreen, { onLoginSuccess: () => {
   } });
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: !isRightPanelOpen ? "hide-right-panel" : "", style: { width: "100vw", height: "100vh", position: "relative", overflow: "hidden" }, children: [
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { width: "100vw", height: "100vh", overflow: "hidden" }, children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(TopNavigationBar, {}),
     editorApp && /* @__PURE__ */ jsxRuntimeExports.jsx(CustomSidebar, { currentUser: session.user, onLogout: () => supabase.auth.signOut(), editorInstance: editorApp }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { position: "absolute", top: "50px", bottom: 0, left: 0, right: 0, backgroundColor: "#e5e5e5" }, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: `style-panel-toggle ${!isRightPanelOpen ? "closed" : ""}`, onClick: () => setIsRightPanelOpen(!isRightPanelOpen), children: isRightPanelOpen ? "🎨" : "◀" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(ErrorBoundary, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Tldraw, { licenseKey: TLDRAW_KEY, onMount: (editor) => setEditorApp(editor), children: /* @__PURE__ */ jsxRuntimeExports.jsx(CanvasDropZone, { editor: editorApp }) }) })
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: !panelOpen ? "hide-right-panel" : "", style: { position: "absolute", top: 50, bottom: 0, left: 0, right: 0, background: "#e5e5e5" }, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: `style-panel-toggle ${!panelOpen ? "closed" : ""}`, onClick: () => setPanelOpen(!panelOpen), children: panelOpen ? "🎨" : "◀" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(ErrorBoundary, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Tldraw, { licenseKey: TLDRAW_KEY, onMount: setEditorApp, children: /* @__PURE__ */ jsxRuntimeExports.jsx(CanvasDropZone, { editor: editorApp }) }) })
     ] })
   ] });
 }
