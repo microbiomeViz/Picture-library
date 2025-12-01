@@ -1,71 +1,55 @@
-/* ==========================================================================
-   全局重置
-   ========================================================================== */
+/* 全局设置 */
 html, body, #root {
   width: 100vw;
   height: 100vh;
   margin: 0;
   padding: 0;
-  overflow: hidden; /* 禁止滚动 */
+  overflow: hidden;
   background-color: #f0f0f0;
+  font-family: sans-serif;
 }
 
-/* ==========================================================================
-   🟢 核心修复：强制侧边栏在 Tldraw 上面
-   ========================================================================== */
-
-/* 1. 侧边栏容器：给它加一个比天还大的层级 */
+/* 🟢 侧边栏：因为移出了 Tldraw，它现在直接相对于 body 定位 */
 .sidebar-container {
-  position: fixed !important;  /* 必须是 fixed，钉在屏幕上 */
-  top: 50px !important;        /* 让出顶部导航栏 */
-  left: 10px !important;
-  bottom: 10px !important;
+  position: fixed; /* 钉死在屏幕上 */
+  top: 60px;       /* 让出导航栏 */
+  left: 10px;
+  bottom: 10px;
   width: 280px;
-  height: auto !important;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-  
-  /* 关键：CSS允许的最大层级 */
-  z-index: 2147483647 !important; 
-  
+  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+  z-index: 10000; /* 只要比 Tldraw 高就行 */
   display: flex;
   flex-direction: column;
   transition: transform 0.3s ease;
 }
 
-/* 折叠状态 */
 .sidebar-container.collapsed {
   transform: translateX(-350px);
 }
 
-/* 2. 侧边栏开关按钮：也要在最上面 */
 .sidebar-toggle {
-  position: fixed !important;
-  top: 60px !important;
-  left: 10px !important;
+  position: fixed;
+  top: 70px;
+  left: 10px;
+  z-index: 10001;
   width: 40px;
   height: 40px;
   background: white;
   border-radius: 50%;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  z-index: 2147483647 !important;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
 }
 
-/* 3. Tldraw 容器：强制压到最下面 */
-.tldraw-container {
-  position: absolute !important;
-  inset: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  z-index: 0 !important; /* 你给我下去 */
-}
-
-/* 4. 修复 Tldraw 内部 UI 可能遮挡的问题 */
-.tl-ui-layout {
-  z-index: 1 !important;
-}
+/* 内部样式 */
+.sidebar-content { padding: 15px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.search-input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+.assets-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+.asset-card { background: #fff; border: 1px solid #eee; padding: 5px; cursor: grab; display: flex; flex-direction: column; align-items: center; }
+.asset-card:hover { border-color: blue; }
+.asset-card img { width: 30px; height: 30px; object-fit: contain; }
+.asset-name { font-size: 10px; overflow: hidden; white-space: nowrap; width: 100%; text-align: center; }
