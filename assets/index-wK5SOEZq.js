@@ -11834,7 +11834,6 @@ if (shouldShowDeprecationWarning()) {
 }
 const SUPABASE_URL = "https://hhofyvimltossvlgfriv.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhob2Z5dmltbHRvc3N2bGdmcml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1MjAyNjYsImV4cCI6MjA4MDA5NjI2Nn0.paPgGikExh3xekXczyVDhSTttQT5vhsYzg9oZjCQvFk";
-const GEMINI_API_KEY = "你的_Gemini_Key";
 const TLDRAW_KEY = void 0;
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 class ErrorBoundary extends reactExports.Component {
@@ -11850,8 +11849,9 @@ class ErrorBoundary extends reactExports.Component {
   }
   render() {
     if (this.state.hasError) {
-      return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { padding: 20, color: "red", background: "#fff", height: "100vh", zIndex: 99999999 }, children: [
+      return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { padding: 20, color: "red", background: "#fff", height: "100vh", zIndex: 99999999, position: "relative" }, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { children: "💥 网页出错了" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("pre", { children: this.state.error?.message }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: () => {
           localStorage.clear();
           window.location.reload();
@@ -11892,172 +11892,268 @@ function LoginScreen({ onLoginSuccess }) {
   const [email, setEmail] = reactExports.useState("");
   const [password, setPassword] = reactExports.useState("");
   const [loading, setLoading] = reactExports.useState(false);
+  const [errorMsg, setErrorMsg] = reactExports.useState("");
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMsg("");
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
-    if (!error) onLoginSuccess();
-    else alert("登录失败");
+    if (error) setErrorMsg("账号或密码错误");
+    else onLoginSuccess();
   };
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { position: "fixed", inset: 0, background: "#f5f5f7", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 9999 }, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { background: "white", padding: "40px", borderRadius: "12px", width: "300px", textAlign: "center" }, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { children: "Lab Chen" }),
+  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { position: "fixed", inset: 0, background: "#f5f5f7", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 9999 }, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { background: "white", padding: "40px", borderRadius: "12px", width: "320px", textAlign: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { style: { marginTop: 0, color: "#333" }, children: "Lab Chen 资源库" }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("form", { onSubmit: handleLogin, style: { display: "flex", flexDirection: "column", gap: "15px" }, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("input", { type: "email", placeholder: "邮箱", required: true, value: email, onChange: (e) => setEmail(e.target.value), style: { padding: "10px" } }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("input", { type: "password", placeholder: "密码", required: true, value: password, onChange: (e) => setPassword(e.target.value), style: { padding: "10px" } }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "submit", disabled: loading, style: { padding: "10px", background: "#2684ff", color: "white", border: "none" }, children: loading ? "..." : "登录" })
+      /* @__PURE__ */ jsxRuntimeExports.jsx("input", { type: "email", placeholder: "邮箱", required: true, value: email, onChange: (e) => setEmail(e.target.value), style: { padding: "10px", border: "1px solid #ddd", borderRadius: "6px" } }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("input", { type: "password", placeholder: "密码", required: true, value: password, onChange: (e) => setPassword(e.target.value), style: { padding: "10px", border: "1px solid #ddd", borderRadius: "6px" } }),
+      errorMsg && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { color: "red", fontSize: 12 }, children: errorMsg }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("button", { type: "submit", disabled: loading, style: { padding: "10px", background: "#2684ff", color: "white", border: "none", borderRadius: "6px", cursor: "pointer" }, children: loading ? "登录中..." : "进入实验室" })
     ] })
   ] }) });
+}
+function CanvasDropZone({ editor }) {
+  reactExports.useEffect(() => {
+    if (!editor) return;
+    const handleDragOver = (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "copy";
+    };
+    const handleDrop = async (e) => {
+      const assetData = e.dataTransfer?.getData("lab-chen-asset");
+      if (!assetData) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      try {
+        const { url } = JSON.parse(assetData);
+        const point = editor.screenToPage({ x: e.clientX, y: e.clientY });
+        editor.createShape({
+          type: "image",
+          x: point.x - 50,
+          y: point.y - 50,
+          props: {
+            w: 100,
+            h: 100,
+            url,
+            assetId: null
+          }
+        });
+      } catch (error) {
+        console.error("拖拽放置失败:", error);
+      }
+    };
+    window.addEventListener("dragover", handleDragOver, true);
+    window.addEventListener("drop", handleDrop, true);
+    return () => {
+      window.removeEventListener("dragover", handleDragOver, true);
+      window.removeEventListener("drop", handleDrop, true);
+    };
+  }, [editor]);
+  return null;
 }
 function CustomSidebar({ currentUser, onLogout, editorInstance }) {
   const editor = editorInstance;
   const [isOpen, setIsOpen] = reactExports.useState(true);
-  const [activeTab, setActiveTab] = reactExports.useState("资源库");
+  const DEFAULT_CATS = ["实验仪器", "微生物", "植物", "盆栽", "试剂耗材"];
   const [categories, setCategories] = reactExports.useState({});
-  const [currentCategory, setCurrentCategory] = reactExports.useState("实验仪器");
+  const [currentCategory, setCurrentCategory] = reactExports.useState(DEFAULT_CATS[0]);
+  const [catList, setCatList] = reactExports.useState(DEFAULT_CATS);
   const [searchTerm, setSearchTerm] = reactExports.useState("");
-  const [projects, setProjects] = reactExports.useState([]);
-  const [prompt, setPrompt] = reactExports.useState("");
-  const [aiStyle, setAiStyle] = reactExports.useState("Flat");
-  const [isAiLoading, setIsAiLoading] = reactExports.useState(false);
   const [isUploading, setIsUploading] = reactExports.useState(false);
-  const [targetCategory, setTargetCategory] = reactExports.useState("实验仪器");
   const fetchAssets = async () => {
-    try {
-      const { data, error } = await supabase.from("assets").select("*");
-      if (error) throw error;
-      if (data) {
-        const newCats = {};
-        if (data.length === 0) newCats["默认"] = [];
-        else {
-          data.forEach((item) => {
-            const cat = item.category || "未分类";
-            if (!newCats[cat]) newCats[cat] = [];
-            newCats[cat].push(item);
-          });
-        }
-        setCategories(newCats);
-        const keys = Object.keys(newCats);
-        if (keys.length > 0 && !newCats[currentCategory]) {
-          setCurrentCategory(keys[0]);
-          setTargetCategory(keys[0]);
-        }
-      }
-    } catch (e) {
-      console.error(e);
+    const { data, error } = await supabase.from("assets").select("*");
+    if (error) {
+      console.error("加载素材失败:", error);
+      return;
     }
-  };
-  const fetchProjects = async () => {
-    const { data } = await supabase.from("projects").select("*").order("created_at", { ascending: false });
-    if (data) setProjects(data);
+    if (data) {
+      const newCats = {};
+      catList.forEach((c) => newCats[c] = []);
+      data.forEach((item) => {
+        const cat = item.category || "未分类";
+        if (!newCats[cat]) {
+          newCats[cat] = [];
+          if (!catList.includes(cat)) setCatList((prev) => [...prev, cat]);
+        }
+        newCats[cat].push(item);
+      });
+      setCategories(newCats);
+    }
   };
   reactExports.useEffect(() => {
     fetchAssets();
-    fetchProjects();
   }, []);
-  const handleUpload = async (file) => {
+  const handleLocalUpload = async (file) => {
     setIsUploading(true);
     try {
-      const ext = file.name.split(".").pop();
-      const path = `${Date.now()}.${ext}`;
-      await supabase.storage.from("bio-icons").upload(path, file);
-      const { data: { publicUrl } } = supabase.storage.from("bio-icons").getPublicUrl(path);
-      await supabase.from("assets").insert({ name: file.name.split(".")[0], url: publicUrl, category: targetCategory, user_id: currentUser.id });
-      alert("上传成功");
-      fetchAssets();
-    } catch (e) {
-      alert(e.message);
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const ext = file.name.split(".").pop();
+        const fileName = file.name.split(".")[0];
+        const path = `${Date.now()}.${ext}`;
+        await supabase.storage.from("bio-icons").upload(path, file);
+        const { data: { publicUrl } } = supabase.storage.from("bio-icons").getPublicUrl(path);
+        await supabase.from("assets").insert({
+          name: fileName,
+          url: publicUrl,
+          category: currentCategory,
+          user_id: currentUser.id
+        });
+        alert("✅ 图片已导入当前分组");
+        fetchAssets();
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      alert("上传失败: " + err.message);
     } finally {
       setIsUploading(false);
     }
   };
-  const handleAIGenerate = async () => {
-    if (!prompt || !GEMINI_API_KEY) return alert("配置Key");
-    setIsAiLoading(true);
+  const handleAssetClick = (url) => {
+    if (!editor) return;
+    const { w, h } = editor.getViewportScreenBounds();
+    const center = editor.screenToPage({ x: w / 2, y: h / 2 });
+    editor.createShape({
+      type: "image",
+      x: center.x - 50,
+      y: center.y - 50,
+      props: { w: 100, h: 100, url }
+    });
+  };
+  const handleDeleteAsset = async (e, id, name) => {
+    e.stopPropagation();
+    if (!confirm(`确定要删除 "${name}" 吗？`)) return;
+    const { error } = await supabase.from("assets").delete().eq("id", id);
+    if (error) alert("删除失败: " + error.message);
+    else fetchAssets();
+  };
+  const handleAddCategory = () => {
+    const name = prompt("请输入新分组名称:");
+    if (name && !catList.includes(name)) {
+      setCatList([...catList, name]);
+      setCategories({ ...categories, [name]: [] });
+      setCurrentCategory(name);
+    }
+  };
+  const handleRenameCategory = (oldName) => {
+    const newName = prompt(`重命名 "${oldName}" 为:`, oldName);
+    if (!newName || newName === oldName) return;
+    alert(`演示模式：已尝试将分类 "${oldName}" 重命名为 "${newName}"。`);
+  };
+  const downloadBlob = (blob, filename) => {
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.click();
+    window.URL.revokeObjectURL(url);
+  };
+  const handleExport = async (format) => {
+    if (!editor) return;
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${GEMINI_API_KEY}`;
-      const systemPrompt = `Create an SVG code for: "${prompt}" in ${aiStyle} style. Return ONLY raw <svg> code.`;
-      const response = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] }) });
-      const data = await response.json();
-      let svgCode = data.candidates[0].content.parts[0].text.replace(/```xml|```svg|```/g, "").trim();
-      const blob = new Blob([svgCode], { type: "image/svg+xml" });
-      const { w, h } = editor.getViewportScreenBounds();
-      const center = editor.screenToPage({ x: w / 2, y: h / 2 });
-      const file = new File([blob], "ai.svg", { type: "image/svg+xml" });
-      editor.putExternalContent({ type: "files", files: [file], point: center });
-      setPrompt("");
-    } catch (error) {
-      alert("生成失败");
-    } finally {
-      setIsAiLoading(false);
+      const shapeIds = Array.from(editor.getCurrentPageShapeIds());
+      if (shapeIds.length === 0) return alert("画布是空的");
+      const svg = await editor.getSvg(shapeIds);
+      if (!svg) return;
+      const name = `lab-chen-export-${Date.now()}`;
+      if (format === "svg") {
+        const svgString = new XMLSerializer().serializeToString(svg);
+        const blob = new Blob([svgString], { type: "image/svg+xml" });
+        downloadBlob(blob, name + ".svg");
+      } else {
+        const svgString = new XMLSerializer().serializeToString(svg);
+        const img = new Image();
+        const svgUrl = "data:image/svg+xml;base64," + window.btoa(unescape(encodeURIComponent(svgString)));
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const scale = 2;
+          const w = parseFloat(svg.getAttribute("width") || "1000");
+          const h = parseFloat(svg.getAttribute("height") || "1000");
+          canvas.width = w * scale;
+          canvas.height = h * scale;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.scale(scale, scale);
+            ctx.drawImage(img, 0, 0, w, h);
+            canvas.toBlob((blob) => {
+              if (blob) downloadBlob(blob, name + ".png");
+            }, "image/png");
+          }
+        };
+        img.src = svgUrl;
+      }
+    } catch (e) {
+      console.error(e);
+      alert("导出失败，请重试");
     }
   };
-  const handleSaveProject = async () => {
-    const name = window.prompt("项目名称", "未命名");
-    if (!name) return;
-    const snapshot = editor.store.getSnapshot();
-    const { error } = await supabase.from("projects").insert({ name, data: snapshot, user_id: currentUser.id });
-    if (error) alert("失败: " + error.message);
-    else {
-      alert("✅ 保存成功");
-      fetchProjects();
-    }
-  };
-  const handleLoadProject = (d) => {
-    if (confirm("覆盖当前画布？")) editor.store.loadSnapshot(d);
-  };
-  const handleDeleteProject = async (id) => {
-    if (!confirm("删除？")) return;
-    await supabase.from("projects").delete().eq("id", id);
-    fetchProjects();
-  };
-  const currentAssets = categories && currentCategory && categories[currentCategory] ? categories[currentCategory] : [];
+  const currentList = categories[currentCategory] || [];
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
     !isOpen && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "sidebar-toggle", onClick: () => setIsOpen(true), children: "➡️" }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: `sidebar-container ${!isOpen ? "collapsed" : ""}`, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "sidebar-content", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "header-row", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { flex: 1 }, children: /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { style: { margin: 0 }, children: "工具箱" }) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: onLogout, style: { fontSize: 10 }, children: "退出" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: () => setIsOpen(false), children: "⬅️" })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", gap: 10, borderBottom: "1px solid #eee", paddingBottom: 5, marginTop: 10 }, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { onClick: () => setActiveTab("资源库"), style: { fontWeight: "bold", color: activeTab === "资源库" ? "#2684ff" : "#999", cursor: "pointer" }, children: "📂 素材库" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { onClick: () => setActiveTab("项目"), style: { fontWeight: "bold", color: activeTab === "项目" ? "#2684ff" : "#999", cursor: "pointer" }, children: "💾 项目" })
-      ] }),
-      activeTab === "资源库" && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { background: "#f0f7ff", padding: 10, borderRadius: 8, marginTop: 10 }, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("input", { value: prompt, onChange: (e) => setPrompt(e.target.value), placeholder: "AI 生成图片...", className: "search-input" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { display: "flex", gap: 5, marginTop: 5 }, children: ["Flat", "3D", "Sketch"].map((s) => /* @__PURE__ */ jsxRuntimeExports.jsx("span", { onClick: () => setAiStyle(s), style: { fontSize: 10, padding: "2px 5px", background: aiStyle === s ? "#2684ff" : "#ddd", color: aiStyle === s ? "white" : "#333", borderRadius: 4, cursor: "pointer" }, children: s }, s)) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: handleAIGenerate, disabled: isAiLoading, style: { marginTop: 5, width: "100%" }, children: isAiLoading ? "..." : "✨ AI绘图" })
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `sidebar-container ${!isOpen ? "collapsed" : ""}`, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "sidebar-header", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" }, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { style: { margin: 0, fontSize: 16 }, children: "Lab Chen 资源库" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: () => setIsOpen(false), style: { border: "none", background: "none", cursor: "pointer" }, children: "⬅️" })
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("input", { placeholder: "🔍 搜索...", value: searchTerm, onChange: (e) => setSearchTerm(e.target.value), className: "search-input", style: { marginTop: 10 } }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { display: "flex", gap: 5, overflowX: "auto", marginTop: 10, paddingBottom: 5 }, children: Object.keys(categories).map((cat) => /* @__PURE__ */ jsxRuntimeExports.jsx("span", { onClick: () => {
-          setCurrentCategory(cat);
-          setTargetCategory(cat);
-        }, style: { fontSize: 11, padding: "3px 8px", borderRadius: 10, background: currentCategory === cat ? "#333" : "#eee", color: currentCategory === cat ? "white" : "#333", cursor: "pointer", whiteSpace: "nowrap" }, children: cat }, cat)) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "assets-grid", style: { marginTop: 10, maxHeight: "300px", overflowY: "auto" }, children: currentAssets.filter((asset) => asset.name.includes(searchTerm)).map((asset) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "asset-card", draggable: true, onDragStart: (e) => e.dataTransfer.setData("bio-render-url", asset.url), children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: asset.url, alt: asset.name, style: { width: "100%", height: "50px", objectFit: "contain" } }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "asset-name", children: asset.name })
-        ] }, asset.id)) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { style: { display: "block", textAlign: "center", marginTop: 20, cursor: "pointer", color: "blue", fontSize: 12 }, children: [
-          isUploading ? "..." : "☁️ 上传",
-          /* @__PURE__ */ jsxRuntimeExports.jsx("input", { type: "file", style: { display: "none" }, onChange: (e) => e.target.files && handleUpload(e.target.files[0]) })
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "user-info-box", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { style: { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "140px" }, children: [
+            "👤 ",
+            currentUser.email
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: "logout-btn", onClick: onLogout, children: "切换账号" })
         ] })
       ] }),
-      activeTab === "项目" && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { marginTop: 20 }, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: handleSaveProject, style: { width: "100%", padding: 8, background: "#28a745", color: "white", border: "none", borderRadius: 4 }, children: "💾 保存" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginTop: 10, maxHeight: "300px", overflowY: "auto" }, children: projects.map((p) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { padding: "8px", borderBottom: "1px solid #eee", display: "flex", justifyContent: "space-between", alignItems: "center" }, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { onClick: () => handleLoadProject(p.data), style: { cursor: "pointer", flex: 1 }, children: p.name }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { onClick: () => handleDeleteProject(p.id), style: { cursor: "pointer", color: "red", fontWeight: "bold" }, children: "×" })
-        ] }, p.id)) })
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "sidebar-content", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", gap: 5, alignItems: "center" }, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "category-tabs", children: catList.map((cat) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "div",
+            {
+              className: `category-tab ${currentCategory === cat ? "active" : ""}`,
+              onClick: () => setCurrentCategory(cat),
+              onDoubleClick: () => handleRenameCategory(cat),
+              title: "双击重命名",
+              children: cat
+            },
+            cat
+          )) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: handleAddCategory, style: { fontSize: 16, border: "none", background: "none", cursor: "pointer" }, title: "新建分组", children: "+" })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("input", { className: "search-input", placeholder: "🔍 搜索图片...", value: searchTerm, onChange: (e) => setSearchTerm(e.target.value), style: { width: "100%", padding: 8, border: "1px solid #ddd", borderRadius: 6 } }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "assets-grid", children: currentList.filter((a) => a.name.includes(searchTerm)).map((asset) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "div",
+          {
+            className: "asset-card",
+            onClick: () => handleAssetClick(asset.url),
+            draggable: true,
+            onDragStart: (e) => e.dataTransfer.setData("lab-chen-asset", JSON.stringify({ url: asset.url })),
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: asset.url, alt: asset.name }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "asset-name", children: asset.name }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "delete-btn", onClick: (e) => handleDeleteAsset(e, asset.id, asset.name), children: "×" })
+            ]
+          },
+          asset.id
+        )) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { style: { display: "block", textAlign: "center", padding: 10, border: "1px dashed #ccc", borderRadius: 6, cursor: "pointer", color: "#2684ff", fontSize: 12 }, children: [
+          isUploading ? "正在导入..." : "📂 从本地导入图片到此分组",
+          /* @__PURE__ */ jsxRuntimeExports.jsx("input", { type: "file", accept: ".png,.jpg,.svg", style: { display: "none" }, onChange: (e) => e.target.files && handleLocalUpload(e.target.files[0]) })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "sidebar-footer", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "export-title", children: "导出作品" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "export-buttons", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: "export-btn", onClick: () => handleExport("svg"), children: "🎨 导出为 Illustrator (SVG)" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: "export-btn", onClick: () => handleExport("png"), children: "🖼️ 导出为高清图片 (PNG)" })
+        ] })
       ] })
-    ] }) })
+    ] })
   ] });
 }
 function App() {
   const [session, setSession] = reactExports.useState(null);
-  const [isStyleOpen, setIsStyleOpen] = reactExports.useState(true);
   const [editorApp, setEditorApp] = reactExports.useState(null);
+  const [isRightPanelOpen, setIsRightPanelOpen] = reactExports.useState(true);
   reactExports.useEffect(() => {
     supabase.auth.getSession().then(({ data: { session: session2 } }) => {
       setSession(session2);
@@ -12069,47 +12165,42 @@ function App() {
   }, []);
   if (!session) return /* @__PURE__ */ jsxRuntimeExports.jsx(LoginScreen, { onLoginSuccess: () => {
   } });
-  return (
-    // 🟢 关键修改：在这里加上 className 控制右侧面板隐藏
-    /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "div",
-      {
-        className: isStyleOpen ? "" : "hide-right-panel",
-        style: { width: "100vw", height: "100vh", position: "relative", overflow: "hidden" },
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(TopNavigationBar, {}),
-          editorApp && /* @__PURE__ */ jsxRuntimeExports.jsx(
-            CustomSidebar,
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    "div",
+    {
+      className: !isRightPanelOpen ? "hide-right-panel" : "",
+      style: { width: "100vw", height: "100vh", position: "relative", overflow: "hidden" },
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(TopNavigationBar, {}),
+        editorApp && /* @__PURE__ */ jsxRuntimeExports.jsx(
+          CustomSidebar,
+          {
+            currentUser: session.user,
+            onLogout: () => supabase.auth.signOut(),
+            editorInstance: editorApp
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { position: "absolute", top: "50px", bottom: 0, left: 0, right: 0, backgroundColor: "#e5e5e5" }, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "button",
             {
-              currentUser: session.user,
-              onLogout: () => supabase.auth.signOut(),
-              editorInstance: editorApp
+              className: `style-panel-toggle ${!isRightPanelOpen ? "closed" : ""}`,
+              onClick: () => setIsRightPanelOpen(!isRightPanelOpen),
+              title: "切换右侧属性面板",
+              children: isRightPanelOpen ? "🎨" : "◀"
             }
           ),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { position: "absolute", top: "50px", bottom: 0, left: 0, right: 0, backgroundColor: "#e5e5e5" }, children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
-              "button",
-              {
-                className: `style-panel-toggle ${isStyleOpen ? "active" : ""}`,
-                onClick: () => setIsStyleOpen(!isStyleOpen),
-                style: { top: "10px" },
-                children: isStyleOpen ? "🎨" : "◀"
-              }
-            ),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(ErrorBoundary, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-              Tldraw,
-              {
-                licenseKey: TLDRAW_KEY,
-                onMount: (editor) => {
-                  console.log("Tldraw 加载完成");
-                  setEditorApp(editor);
-                }
-              }
-            ) })
-          ] })
-        ]
-      }
-    )
+          /* @__PURE__ */ jsxRuntimeExports.jsx(ErrorBoundary, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Tldraw,
+            {
+              licenseKey: TLDRAW_KEY,
+              onMount: (editor) => setEditorApp(editor),
+              children: /* @__PURE__ */ jsxRuntimeExports.jsx(CanvasDropZone, { editor: editorApp })
+            }
+          ) })
+        ] })
+      ]
+    }
   );
 }
 ReactDOM.createRoot(document.getElementById("root")).render(
