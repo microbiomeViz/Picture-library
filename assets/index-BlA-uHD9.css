@@ -3960,7 +3960,7 @@ html, body, #root {
 /* 🟢 侧边栏：因为移出了 Tldraw，它现在直接相对于 body 定位 */
 .sidebar-container {
   position: fixed; /* 钉死在屏幕上 */
-  top: 60px;       /* 让出导航栏 */
+  top: 100px;       /* 让出导航栏 */
   left: 10px;
   bottom: 10px;
   width: 280px;
