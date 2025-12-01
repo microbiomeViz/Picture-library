@@ -11849,14 +11849,7 @@ class ErrorBoundary extends reactExports.Component {
   }
   render() {
     if (this.state.hasError) {
-      return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { padding: 20, color: "red", background: "#fff", height: "100vh", zIndex: 99999999, position: "relative" }, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { children: "💥 网页出错了" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("pre", { children: this.state.error?.message }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: () => {
-          localStorage.clear();
-          window.location.reload();
-        }, children: "清空缓存并刷新" })
-      ] });
+      return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { padding: 20, color: "red" }, children: "💥 出错了，请刷新页面" });
     }
     return this.props.children;
   }
@@ -11877,15 +11870,8 @@ function TopNavigationBar() {
     left: 0,
     right: 0
   }, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { marginRight: "15px", color: "#666", fontWeight: "bold", fontSize: "14px" }, children: "Lab Chen 在线协作平台" }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx(
-      "img",
-      {
-        src: "https://hhofyvimltossvlgfriv.supabase.co/storage/v1/object/public/bio-icons/1111.png",
-        alt: "Logo",
-        style: { height: "36px", borderRadius: "4px" }
-      }
-    )
+    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { marginRight: "15px", color: "#666", fontWeight: "bold", fontSize: "14px" }, children: "Picture library 在线协作平台" }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: "https://hhofyvimltossvlgfriv.supabase.co/storage/v1/object/public/bio-icons/1111.png", alt: "Logo", style: { height: "36px", borderRadius: "4px" } })
   ] });
 }
 function LoginScreen({ onLoginSuccess }) {
@@ -11903,7 +11889,7 @@ function LoginScreen({ onLoginSuccess }) {
     else onLoginSuccess();
   };
   return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { position: "fixed", inset: 0, background: "#f5f5f7", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 9999 }, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { background: "white", padding: "40px", borderRadius: "12px", width: "320px", textAlign: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { style: { marginTop: 0, color: "#333" }, children: "Lab Chen 资源库" }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { style: { marginTop: 0, color: "#333" }, children: "Picture library 资源库" }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("form", { onSubmit: handleLogin, style: { display: "flex", flexDirection: "column", gap: "15px" }, children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("input", { type: "email", placeholder: "邮箱", required: true, value: email, onChange: (e) => setEmail(e.target.value), style: { padding: "10px", border: "1px solid #ddd", borderRadius: "6px" } }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("input", { type: "password", placeholder: "密码", required: true, value: password, onChange: (e) => setPassword(e.target.value), style: { padding: "10px", border: "1px solid #ddd", borderRadius: "6px" } }),
@@ -11913,40 +11899,36 @@ function LoginScreen({ onLoginSuccess }) {
   ] }) });
 }
 const insertImageToCanvas = (editor, url, clientX, clientY) => {
+  const point = editor.screenToPage({ x: clientX, y: clientY });
+  editor.createShape({
+    type: "image",
+    x: point.x - 50,
+    y: point.y - 50,
+    props: {
+      w: 100,
+      // 默认大小
+      h: 100,
+      url,
+      assetId: null
+      // 确保不关联 asset
+    }
+  });
   const img = new Image();
-  img.crossOrigin = "anonymous";
   img.src = url;
   img.onload = () => {
-    const point = editor.screenToPage({ x: clientX, y: clientY });
-    const w = img.width || 100;
-    const h = img.height || 100;
-    const maxSize = 200;
-    let finalW = w;
-    let finalH = h;
-    if (w > h && w > maxSize) {
-      finalW = maxSize;
-      finalH = maxSize / w * h;
-    } else if (h > maxSize) {
-      finalH = maxSize;
-      finalW = maxSize / h * w;
+    const shapes = editor.getCurrentPageShapes();
+    const shape = shapes.find((s) => s.props.url === url);
+    if (shape) {
+      const ratio = img.width / img.height;
+      editor.updateShape({
+        id: shape.id,
+        type: "image",
+        props: { w: 100, h: 100 / ratio }
+      });
     }
-    editor.createShape({
-      type: "image",
-      x: point.x - finalW / 2,
-      y: point.y - finalH / 2,
-      props: { w: finalW, h: finalH, url, assetId: null }
-    });
-  };
-  img.onerror = () => {
-    const point = editor.screenToPage({ x: clientX, y: clientY });
-    editor.createShape({
-      type: "image",
-      x: point.x - 50,
-      y: point.y - 50,
-      props: { w: 100, h: 100, url, assetId: null }
-    });
   };
 };
+const DRAG_KEY = "picture-library-drag-data";
 function CanvasDropZone({ editor }) {
   reactExports.useEffect(() => {
     if (!editor) return;
@@ -11955,7 +11937,7 @@ function CanvasDropZone({ editor }) {
       e.dataTransfer.dropEffect = "copy";
     };
     const handleDrop = async (e) => {
-      const assetData = e.dataTransfer?.getData("lab-chen-asset");
+      const assetData = e.dataTransfer?.getData(DRAG_KEY);
       if (!assetData) return;
       e.preventDefault();
       e.stopImmediatePropagation();
@@ -11987,7 +11969,7 @@ function CustomSidebar({ currentUser, onLogout, editorInstance }) {
   const fetchAssets = async () => {
     const { data, error } = await supabase.from("assets").select("*");
     if (error) {
-      console.error("加载素材失败:", error);
+      console.error(error);
       return;
     }
     if (data) {
@@ -12011,19 +11993,20 @@ function CustomSidebar({ currentUser, onLogout, editorInstance }) {
     setIsUploading(true);
     try {
       const reader = new FileReader();
-      reader.onload = async () => {
-        const ext = file.name.split(".").pop();
+      reader.onload = async (e) => {
+        const base64Url = e.target?.result;
         const fileName = file.name.split(".")[0];
+        const ext = file.name.split(".").pop();
         const path = `${Date.now()}.${ext}`;
         await supabase.storage.from("bio-icons").upload(path, file);
-        const { data: { publicUrl } } = supabase.storage.from("bio-icons").getPublicUrl(path);
         await supabase.from("assets").insert({
           name: fileName,
-          url: publicUrl,
+          url: base64Url,
+          // 🟢 这里存的是 base64，不是 http 链接
           category: currentCategory,
           user_id: currentUser.id
         });
-        alert("✅ 上传成功");
+        alert("✅ 上传成功 (Base64模式)");
         fetchAssets();
       };
       reader.readAsDataURL(file);
@@ -12040,36 +12023,30 @@ function CustomSidebar({ currentUser, onLogout, editorInstance }) {
   };
   const handleDeleteAsset = async (e, id, name) => {
     e.stopPropagation();
-    if (!confirm(`确定要删除 "${name}" 吗？`)) return;
+    if (!confirm(`删除 "${name}" ？`)) return;
     const { error } = await supabase.from("assets").delete().eq("id", id);
-    if (error) alert("删除失败: " + error.message);
+    if (error) alert(error.message);
     else fetchAssets();
   };
   const handleRenameAsset = async (e, id, oldName) => {
     e.stopPropagation();
-    const newName = prompt("请输入新的图片名称:", oldName);
+    const newName = prompt("新名称:", oldName);
     if (!newName || newName === oldName) return;
     const { error } = await supabase.from("assets").update({ name: newName }).eq("id", id);
-    if (error) alert("重命名失败: " + error.message);
+    if (error) alert(error.message);
     else fetchAssets();
   };
   const handleMoveAsset = async (e, id, currentCat) => {
     e.stopPropagation();
-    const targetCat = prompt(`将图片移动到哪个分组？
-(当前: ${currentCat})`, currentCat);
+    const targetCat = prompt(`移动到分组 (当前: ${currentCat})`, currentCat);
     if (!targetCat || targetCat === currentCat) return;
-    if (!catList.includes(targetCat)) {
-      setCatList((prev) => [...prev, targetCat]);
-    }
+    if (!catList.includes(targetCat)) setCatList((prev) => [...prev, targetCat]);
     const { error } = await supabase.from("assets").update({ category: targetCat }).eq("id", id);
-    if (error) alert("移动失败: " + error.message);
-    else {
-      alert(`已移动到 "${targetCat}"`);
-      fetchAssets();
-    }
+    if (error) alert(error.message);
+    else fetchAssets();
   };
   const handleAddCategory = () => {
-    const name = prompt("请输入新分组名称:");
+    const name = prompt("新分组名称:");
     if (name && !catList.includes(name)) {
       setCatList([...catList, name]);
       setCategories({ ...categories, [name]: [] });
@@ -12078,17 +12055,17 @@ function CustomSidebar({ currentUser, onLogout, editorInstance }) {
   };
   const handleDeleteCategory = async (e, catName) => {
     e.stopPropagation();
-    if (DEFAULT_CATS.includes(catName)) {
-      alert("默认分组不可删除，但可以清空。");
-      return;
-    }
-    if (!confirm(`⚠️ 确定删除分组 "${catName}" 吗？
-该分组下的所有图片将被移动到 "未分类"。`)) return;
+    if (DEFAULT_CATS.includes(catName)) return alert("默认分组不可删");
+    if (!confirm(`删除 "${catName}" ？图片将移至 "未分类"`)) return;
     await supabase.from("assets").update({ category: "未分类" }).eq("category", catName);
     const newCatList = catList.filter((c) => c !== catName);
     setCatList(newCatList);
     setCurrentCategory(newCatList[0] || "未分类");
     fetchAssets();
+  };
+  const handleRenameCategory = (oldName) => {
+    const newName = prompt(`重命名 "${oldName}" 为:`, oldName);
+    if (newName && newName !== oldName) alert(`演示：请自行接入后端批量更新接口`);
   };
   const downloadBlob = (blob, filename) => {
     const url = window.URL.createObjectURL(blob);
@@ -12105,14 +12082,14 @@ function CustomSidebar({ currentUser, onLogout, editorInstance }) {
       if (shapeIds.length === 0) return alert("画布是空的");
       const svg = await editor.getSvg(shapeIds);
       if (!svg) return;
-      const name = `lab-chen-export-${Date.now()}`;
+      const name = `picture-library-export-${Date.now()}`;
       if (format === "svg") {
         const blob = new Blob([new XMLSerializer().serializeToString(svg)], { type: "image/svg+xml" });
         downloadBlob(blob, name + ".svg");
       } else {
         const svgString = new XMLSerializer().serializeToString(svg);
         const img = new Image();
-        const svgUrl = "data:image/svg+xml;base64," + window.btoa(unescape(encodeURIComponent(svgString)));
+        img.src = "data:image/svg+xml;base64," + window.btoa(unescape(encodeURIComponent(svgString)));
         img.onload = () => {
           const canvas = document.createElement("canvas");
           const w = parseFloat(svg.getAttribute("width") || "1000");
@@ -12128,10 +12105,8 @@ function CustomSidebar({ currentUser, onLogout, editorInstance }) {
             });
           }
         };
-        img.src = svgUrl;
       }
     } catch (e) {
-      console.error(e);
       alert("导出失败");
     }
   };
@@ -12141,7 +12116,7 @@ function CustomSidebar({ currentUser, onLogout, editorInstance }) {
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `sidebar-container ${!isOpen ? "collapsed" : ""}`, children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "sidebar-header", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" }, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { style: { margin: 0, fontSize: 16 }, children: "Lab Chen 资源库" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { style: { margin: 0, fontSize: 16 }, children: "Picture library 资源库" }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: () => setIsOpen(false), style: { border: "none", background: "none", cursor: "pointer" }, children: "⬅️" })
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "user-info-box", children: [
@@ -12149,7 +12124,7 @@ function CustomSidebar({ currentUser, onLogout, editorInstance }) {
             "👤 ",
             currentUser.email
           ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: "logout-btn", onClick: onLogout, children: "切换账号" })
+          /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: "logout-btn", onClick: onLogout, children: "切换" })
         ] })
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "sidebar-content", children: [
@@ -12159,6 +12134,8 @@ function CustomSidebar({ currentUser, onLogout, editorInstance }) {
             {
               className: `category-tab ${currentCategory === cat ? "active" : ""}`,
               onClick: () => setCurrentCategory(cat),
+              onDoubleClick: () => handleRenameCategory(cat),
+              title: "双击重命名",
               children: [
                 cat,
                 !DEFAULT_CATS.includes(cat) && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "cat-delete-btn", onClick: (e) => handleDeleteCategory(e, cat), children: "×" })
@@ -12166,16 +12143,16 @@ function CustomSidebar({ currentUser, onLogout, editorInstance }) {
             },
             cat
           )) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: handleAddCategory, style: { fontSize: 16, border: "none", background: "none", cursor: "pointer" }, title: "新建分组", children: "+" })
+          /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: handleAddCategory, style: { fontSize: 16, border: "none", background: "none", cursor: "pointer" }, title: "新建", children: "+" })
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("input", { className: "search-input", placeholder: "🔍 搜索图片...", value: searchTerm, onChange: (e) => setSearchTerm(e.target.value), style: { width: "100%", padding: 8, border: "1px solid #ddd", borderRadius: 6 } }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("input", { className: "search-input", placeholder: "🔍 搜索...", value: searchTerm, onChange: (e) => setSearchTerm(e.target.value), style: { width: "100%", padding: 8, border: "1px solid #ddd", borderRadius: 6 } }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "assets-grid", children: currentList.filter((a) => a.name.includes(searchTerm)).map((asset) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
           "div",
           {
             className: "asset-card",
             onClick: () => handleAssetClick(asset.url),
             draggable: true,
-            onDragStart: (e) => e.dataTransfer.setData("lab-chen-asset", JSON.stringify({ url: asset.url })),
+            onDragStart: (e) => e.dataTransfer.setData(DRAG_KEY, JSON.stringify({ url: asset.url })),
             children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: asset.url, alt: asset.name }),
               /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "asset-name", title: "双击重命名", onDoubleClick: (e) => handleRenameAsset(e, asset.id, asset.name), children: asset.name }),
@@ -12188,15 +12165,15 @@ function CustomSidebar({ currentUser, onLogout, editorInstance }) {
           asset.id
         )) }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("label", { style: { display: "block", textAlign: "center", padding: 10, border: "1px dashed #ccc", borderRadius: 6, cursor: "pointer", color: "#2684ff", fontSize: 12 }, children: [
-          isUploading ? "正在导入..." : "📂 从本地导入图片到此分组",
+          isUploading ? "..." : "📂 从本地导入",
           /* @__PURE__ */ jsxRuntimeExports.jsx("input", { type: "file", accept: ".png,.jpg,.svg", style: { display: "none" }, onChange: (e) => e.target.files && handleLocalUpload(e.target.files[0]) })
         ] })
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "sidebar-footer", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "export-title", children: "导出作品" }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "export-buttons", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: "export-btn", onClick: () => handleExport("svg"), children: "🎨 导出为 Illustrator (SVG)" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: "export-btn", onClick: () => handleExport("png"), children: "🖼️ 导出为高清图片 (PNG)" })
+          /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: "export-btn", onClick: () => handleExport("svg"), children: "🎨 SVG (Illustrator)" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: "export-btn", onClick: () => handleExport("png"), children: "🖼️ PNG (图片)" })
         ] })
       ] })
     ] })
@@ -12217,43 +12194,14 @@ function App() {
   }, []);
   if (!session) return /* @__PURE__ */ jsxRuntimeExports.jsx(LoginScreen, { onLoginSuccess: () => {
   } });
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-    "div",
-    {
-      className: !isRightPanelOpen ? "hide-right-panel" : "",
-      style: { width: "100vw", height: "100vh", position: "relative", overflow: "hidden" },
-      children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(TopNavigationBar, {}),
-        editorApp && /* @__PURE__ */ jsxRuntimeExports.jsx(
-          CustomSidebar,
-          {
-            currentUser: session.user,
-            onLogout: () => supabase.auth.signOut(),
-            editorInstance: editorApp
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { position: "absolute", top: "50px", bottom: 0, left: 0, right: 0, backgroundColor: "#e5e5e5" }, children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            "button",
-            {
-              className: `style-panel-toggle ${!isRightPanelOpen ? "closed" : ""}`,
-              onClick: () => setIsRightPanelOpen(!isRightPanelOpen),
-              title: "切换右侧属性面板",
-              children: isRightPanelOpen ? "🎨" : "◀"
-            }
-          ),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(ErrorBoundary, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Tldraw,
-            {
-              licenseKey: TLDRAW_KEY,
-              onMount: (editor) => setEditorApp(editor),
-              children: /* @__PURE__ */ jsxRuntimeExports.jsx(CanvasDropZone, { editor: editorApp })
-            }
-          ) })
-        ] })
-      ]
-    }
-  );
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: !isRightPanelOpen ? "hide-right-panel" : "", style: { width: "100vw", height: "100vh", position: "relative", overflow: "hidden" }, children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx(TopNavigationBar, {}),
+    editorApp && /* @__PURE__ */ jsxRuntimeExports.jsx(CustomSidebar, { currentUser: session.user, onLogout: () => supabase.auth.signOut(), editorInstance: editorApp }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { position: "absolute", top: "50px", bottom: 0, left: 0, right: 0, backgroundColor: "#e5e5e5" }, children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: `style-panel-toggle ${!isRightPanelOpen ? "closed" : ""}`, onClick: () => setIsRightPanelOpen(!isRightPanelOpen), children: isRightPanelOpen ? "🎨" : "◀" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(ErrorBoundary, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Tldraw, { licenseKey: TLDRAW_KEY, onMount: (editor) => setEditorApp(editor), children: /* @__PURE__ */ jsxRuntimeExports.jsx(CanvasDropZone, { editor: editorApp }) }) })
+    ] })
+  ] });
 }
 ReactDOM.createRoot(document.getElementById("root")).render(
   /* @__PURE__ */ jsxRuntimeExports.jsx(React.StrictMode, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(App, {}) })
