@@ -11886,34 +11886,18 @@ function LoginScreen({ onLoginSuccess }) {
     /* @__PURE__ */ jsxRuntimeExports.jsx("button", { disabled: loading, style: { width: "100%", padding: 10, background: "#2684ff", color: "white", border: "none" }, children: loading ? "..." : "进入" })
   ] }) });
 }
-const base64ToBlobUrl = (dataURI) => {
-  try {
-    const byteString = atob(dataURI.split(",")[1]);
-    const mimeString = dataURI.split(",")[0].split(":")[1].split(";")[0];
-    const ab = new ArrayBuffer(byteString.length);
-    const ia = new Uint8Array(ab);
-    for (let i = 0; i < byteString.length; i++) {
-      ia[i] = byteString.charCodeAt(i);
-    }
-    const blob = new Blob([ab], { type: mimeString });
-    return URL.createObjectURL(blob);
-  } catch (e) {
-    console.error("Base64转换失败", e);
-    return dataURI;
-  }
-};
 const insertImageToCanvas = (editor, url, clientX, clientY) => {
-  let safeUrl = url;
-  if (url.startsWith("data:")) {
-    safeUrl = base64ToBlobUrl(url);
+  if (!url || url.startsWith("blob:")) {
+    console.error("Tldraw 禁止使用 blob 链接，请使用 https 或 base64");
+    return;
   }
   const img = new Image();
   img.crossOrigin = "anonymous";
-  img.src = safeUrl;
+  img.src = url;
   img.onload = () => {
     const width = img.naturalWidth || 200;
     const height = img.naturalHeight || 200;
-    const MAX_SIZE = 600;
+    const MAX_SIZE = 500;
     let finalW = width;
     let finalH = height;
     if (width > height && width > MAX_SIZE) {
@@ -11931,14 +11915,14 @@ const insertImageToCanvas = (editor, url, clientX, clientY) => {
       props: {
         w: finalW,
         h: finalH,
-        url: safeUrl,
+        url,
+        // 🔥 直接使用原始 URL (https 或 data:Base64)
         assetId: null
       }
     });
   };
   img.onerror = () => {
-    console.error("图片加载失败:", safeUrl);
-    alert("图片无法加载！请确认：\n1. Supabase 的 Bucket 是 Public 的吗？\n2. Settings->API->CORS 里填了你的网址吗？");
+    console.error("图片加载失败，请检查 Supabase 权限或链接是否有效:", url);
   };
 };
 const DRAG_KEY = "picture-library-drag-data";
