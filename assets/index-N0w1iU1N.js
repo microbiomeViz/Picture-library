@@ -11886,18 +11886,43 @@ function LoginScreen({ onLoginSuccess }) {
     /* @__PURE__ */ jsxRuntimeExports.jsx("button", { disabled: loading, style: { width: "100%", padding: 10, background: "#2684ff", color: "white", border: "none" }, children: loading ? "..." : "进入" })
   ] }) });
 }
-const insertImageToCanvas = (editor, url, clientX, clientY) => {
-  if (!url || url.startsWith("blob:")) {
-    console.error("Tldraw 禁止使用 blob 链接，请使用 https 或 base64");
+const insertImageToCanvas = async (editor, url, clientX, clientY) => {
+  if (!url) return;
+  if (url.startsWith("data:")) {
+    placeShape(editor, url, clientX, clientY);
     return;
   }
+  try {
+    console.log("正在尝试下载图片:", url);
+    const fetchUrl = url.includes("?") ? `${url}&t=${Date.now()}` : `${url}?t=${Date.now()}`;
+    const response = await fetch(fetchUrl, {
+      method: "GET"
+      // mode: 'cors', // 默认就是 cors，不用特意写，写了反而有时候会严查
+    });
+    if (!response.ok) {
+      throw new Error(`下载失败: ${response.status} ${response.statusText}`);
+    }
+    const blob = await response.blob();
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64Url = reader.result;
+      placeShape(editor, base64Url, clientX, clientY);
+    };
+    reader.readAsDataURL(blob);
+  } catch (error) {
+    console.error("❌ 图片下载失败 (Fetch Error):", error);
+    alert(`图片无法插入画布！
+原因: ${error.message}
+请按 F12 查看控制台的红色报错详情。`);
+  }
+};
+const placeShape = (editor, url, clientX, clientY) => {
   const img = new Image();
-  img.crossOrigin = "anonymous";
   img.src = url;
   img.onload = () => {
     const width = img.naturalWidth || 200;
     const height = img.naturalHeight || 200;
-    const MAX_SIZE = 500;
+    const MAX_SIZE = 600;
     let finalW = width;
     let finalH = height;
     if (width > height && width > MAX_SIZE) {
@@ -11916,13 +11941,10 @@ const insertImageToCanvas = (editor, url, clientX, clientY) => {
         w: finalW,
         h: finalH,
         url,
-        // 🔥 直接使用原始 URL (https 或 data:Base64)
+        // 这里放入的是巨大的 Base64 字符串，Tldraw 会通吃
         assetId: null
       }
     });
-  };
-  img.onerror = () => {
-    console.error("图片加载失败，请检查 Supabase 权限或链接是否有效:", url);
   };
 };
 const DRAG_KEY = "picture-library-drag-data";
