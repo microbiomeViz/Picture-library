@@ -11927,19 +11927,23 @@ function CanvasDropZone({ editor }) {
       try {
         const { url } = JSON.parse(assetData);
         const point = editor.screenToPage({ x: e.clientX, y: e.clientY });
-        editor.createShape({
-          type: "image",
-          x: point.x - 50,
-          y: point.y - 50,
-          props: {
-            w: 100,
-            h: 100,
-            url,
-            assetId: null
-          }
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const file = new File([blob], "image.png", { type: blob.type });
+        editor.putExternalContent({
+          type: "files",
+          files: [file],
+          point,
+          ignoreParent: false
         });
       } catch (error) {
         console.error("拖拽放置失败:", error);
+        try {
+          const { url } = JSON.parse(assetData);
+          const point = editor.screenToPage({ x: e.clientX, y: e.clientY });
+          editor.createShape({ type: "image", x: point.x - 50, y: point.y - 50, props: { w: 100, h: 100, url } });
+        } catch (e2) {
+        }
       }
     };
     window.addEventListener("dragover", handleDragOver, true);
@@ -12009,16 +12013,26 @@ function CustomSidebar({ currentUser, onLogout, editorInstance }) {
       setIsUploading(false);
     }
   };
-  const handleAssetClick = (url) => {
+  const handleAssetClick = async (url) => {
     if (!editor) return;
-    const { w, h } = editor.getViewportScreenBounds();
-    const center = editor.screenToPage({ x: w / 2, y: h / 2 });
-    editor.createShape({
-      type: "image",
-      x: center.x - 50,
-      y: center.y - 50,
-      props: { w: 100, h: 100, url }
-    });
+    try {
+      const { w, h } = editor.getViewportScreenBounds();
+      const center = editor.screenToPage({ x: w / 2, y: h / 2 });
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const file = new File([blob], "image.png", { type: blob.type });
+      editor.putExternalContent({
+        type: "files",
+        files: [file],
+        point: center,
+        ignoreParent: false
+      });
+    } catch (error) {
+      console.error("点击上屏失败，回退到旧方法:", error);
+      const { w, h } = editor.getViewportScreenBounds();
+      const center = editor.screenToPage({ x: w / 2, y: h / 2 });
+      editor.createShape({ type: "image", x: center.x - 50, y: center.y - 50, props: { w: 100, h: 100, url } });
+    }
   };
   const handleDeleteAsset = async (e, id, name) => {
     e.stopPropagation();
