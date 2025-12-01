@@ -3946,61 +3946,196 @@ tldraw? probably.
 	}
 }
 
-/* 全局设置 */
+/* ==========================================================================
+   1. 全局重置 (保持不变，基础很稳)
+   ========================================================================== */
 html, body, #root {
   width: 100vw;
   height: 100vh;
   margin: 0;
   padding: 0;
   overflow: hidden;
-  background-color: #f0f0f0;
-  font-family: sans-serif;
+  background-color: #f5f5f7; /* 稍微柔和一点的灰色背景 */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-/* 🟢 侧边栏：因为移出了 Tldraw，它现在直接相对于 body 定位 */
+/* ==========================================================================
+   2. 侧边栏容器 (核心优化)
+   ========================================================================== */
 .sidebar-container {
-  position: fixed; /* 钉死在屏幕上 */
-  top: 100px;       /* 让出导航栏 */
-  left: 10px;
-  bottom: 10px;
-  width: 280px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-  z-index: 10; /* 只要比 Tldraw 高就行 */
+  /* 🔴 修复：原代码 position: left 是错误的，必须是 fixed */
+  position: fixed; 
+  top: 60px;        /* 让出顶部导航栏的高度 (50px) + 10px 间距 */
+  left: 15px;       /* 左边留一点空隙，悬浮感更强 */
+  bottom: 15px;     /* 底部也留空隙 */
+  width: 260px;     /* 宽度适中 */
+  
+  /* 🎨 视觉优化：毛玻璃 + 悬浮阴影 */
+  background: rgba(255, 255, 255, 0.95); /* 微微透明的白色 */
+  backdrop-filter: blur(10px);           /* 模糊背后的内容 */
+  border: 1px solid rgba(0, 0, 0, 0.08); /* 极细的边框 */
+  border-radius: 12px;                   /* 圆角 */
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08); /* 柔和的高级阴影 */
+  
+  /* 🛡️ 层级保护：确保在 Tldraw 之上 */
+  z-index: 10000; 
+  
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
+/* 折叠状态：移出屏幕 */
 .sidebar-container.collapsed {
-  transform: translateX(-350px);
+  transform: translateX(-300px);
 }
 
+/* ==========================================================================
+   3. 开关按钮 (美化)
+   ========================================================================== */
 .sidebar-toggle {
   position: fixed;
-  top: 70px;
-  left: 10px;
-  z-index: 10001;
-  width: 40px;
-  height: 40px;
+  top: 65px;         /* 和侧边栏顶部对齐 */
+  left: 15px;
+  z-index: 10001;    /* 比侧边栏还要高 */
+  width: 36px;
+  height: 36px;
   background: white;
-  border-radius: 50%;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  border: 1px solid #eee;
+  border-radius: 50%; /* 正圆 */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s;
+  font-size: 16px;
 }
 
-/* 内部样式 */
-.sidebar-content { padding: 15px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 10px; }
-.search-input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-.assets-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
-.asset-card { background: #fff; border: 1px solid #eee; padding: 5px; cursor: grab; display: flex; flex-direction: column; align-items: center; }
-.asset-card:hover { border-color: blue; }
-.asset-card img { width: 30px; height: 30px; object-fit: contain; }
-.asset-name { font-size: 10px; overflow: hidden; white-space: nowrap; width: 100%; text-align: center; }
+.sidebar-toggle:hover {
+  background: #f0f7ff;
+  color: #2684ff;
+  transform: scale(1.05); /* 悬停微放大 */
+}
+
+/* 右侧颜色面板开关也统一风格 */
+.style-panel-toggle {
+  position: fixed;
+  top: 60px;
+  right: 15px;
+  z-index: 5000;
+  width: 36px;
+  height: 36px;
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.style-panel-toggle:hover {
+  background: #f0f7ff;
+  color: #2684ff;
+}
+
+/* ==========================================================================
+   4. 内部内容排版
+   ========================================================================== */
+.sidebar-content {
+  padding: 16px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* 统一间距 */
+}
+
+/* 搜索框 */
+.search-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 13px;
+  box-sizing: border-box;
+  background: #f9fafb;
+  transition: all 0.2s;
+}
+.search-input:focus {
+  background: white;
+  border-color: #2684ff;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(38, 132, 255, 0.1);
+}
+
+/* ==========================================================================
+   5. 素材网格 (核心区域)
+   ========================================================================== */
+.assets-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3列布局 */
+  gap: 8px;
+  padding: 2px; /* 防止阴影被切掉 */
+}
+
+.asset-card {
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  padding: 8px 4px;
+  cursor: grab;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  min-height: 60px;
+}
+
+.asset-card:hover {
+  border-color: #2684ff;
+  transform: translateY(-2px); /* 悬浮上移 */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* 投影加深 */
+}
+
+.asset-card:active {
+  cursor: grabbing;
+  transform: scale(0.98);
+}
+
+.asset-card img {
+  width: 100%;
+  height: 40px; /* 固定高度，防止图片乱跑 */
+  object-fit: contain;
+  pointer-events: none;
+  margin-bottom: 4px;
+}
+
+.asset-name {
+  font-size: 10px;
+  color: #666;
+  width: 100%;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   6. 按钮美化
+   ========================================================================== */
+button {
+  transition: filter 0.2s;
+}
+button:hover {
+  filter: brightness(0.95);
+}
+button:active {
+  transform: translateY(1px);
+}
 /* THIS CSS FILE IS GENERATED! DO NOT EDIT. OR EDIT. I'M A COMMENT NOT A COP */
 /* This file is created by the copy-css-files.mjs script in packages/tldraw. */
 /* It combines @tldraw/editor's editor.css and tldraw's ui.css */
